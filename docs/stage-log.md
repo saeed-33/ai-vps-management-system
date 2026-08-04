@@ -143,3 +143,8 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `uv sync --extra dev`.
 - تم تنفيذ `uv run pytest`.
 - النتيجة: `3 passed`.
+
+قرارات معمارية مرتبطة:
+
+- توثيق بنية لوحة الإدارة في `docs/architecture-decisions/adr-001-admin-panel-architecture.md`.
+- توثيق بنية Backend / Control Plane في `docs/architecture-decisions/adr-002-backend-architecture.md`.

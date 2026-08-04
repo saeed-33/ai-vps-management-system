@@ -45,6 +45,7 @@ tests/
 - `docs/phase-3/database-schema-guide.md`: مخطط قاعدة البيانات وشرح الجداول.
 - `docs/phase-3/docker-guide.md`: شرح Docker Compose وخدمات التطوير.
 - `docs/phase-4/`: وثائق أساس Backend API / Control Plane.
+- `docs/architecture-decisions/`: قرارات معمارية موثقة للبنية.
 - `docs/stage-log.md`: سجل المراحل وما تم إنجازه.
 
 ## تشغيل API
