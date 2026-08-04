@@ -69,3 +69,40 @@
 ```text
 https://github.com/saeed-33/ai-vps-management-system
 ```
+
+## المرحلة الثالثة: قاعدة البيانات والنماذج الأساسية
+
+الحالة: مكتملة كملفات تنفيذ وتصميم. تحقق تطبيق migration على قاعدة فعلية مؤجل حتى تشغيل Docker daemon أو تثبيت `psql`.
+
+العمل المطلوب:
+
+- إنشاء مخطط قاعدة البيانات الأساسي.
+- تعريف جداول المستخدمين والصلاحيات.
+- تعريف جداول السيرفرات.
+- تعريف جداول ملفات المراقبة.
+- تعريف جداول الوكلاء المتخصصين.
+- تعريف جداول المراقبة الدورية وقيمها.
+- تعريف جداول المشكلات والتقارير.
+- تعريف جداول الأدوات والحلول المسموحة.
+- تعريف جداول التنفيذ ونتائجه.
+- تعريف جداول RAG والوثائق.
+- تعريف جداول المحادثة وتيليغرام.
+- تعريف سجل التدقيق.
+- إضافة بيئة PostgreSQL وRedis للتطوير.
+
+ما تم إنجازه:
+
+- إنشاء `docs/phase-3/phase-3-plan.md`.
+- إنشاء `docs/phase-3/data-model.md`.
+- إنشاء `docs/phase-3/completion-report.md`.
+- إنشاء `packages/database/migrations/0001_initial_schema.sql`.
+- إنشاء `packages/database/README.md`.
+- إنشاء `infra/compose/docker-compose.dev.yml`.
+- إنشاء `infra/compose/README.md`.
+- تحديث `.env.example`.
+
+التحقق:
+
+- تم التحقق من وجود Docker CLI.
+- تم التحقق من صحة صيغة Docker Compose.
+- لم يتم تطبيق migration لأن Docker daemon غير شغال و`psql` غير مثبت محليا.
