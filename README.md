@@ -42,6 +42,8 @@ tests/
 - `docs/phase-1/`: وثائق تثبيت النطاق والبنية.
 - `docs/phase-2/`: وثائق تأسيس المشروع والمستودع.
 - `docs/phase-3/`: وثائق قاعدة البيانات والنماذج الأساسية.
+- `docs/phase-3/database-schema-guide.md`: مخطط قاعدة البيانات وشرح الجداول.
+- `docs/phase-3/docker-guide.md`: شرح Docker Compose وخدمات التطوير.
 - `docs/stage-log.md`: سجل المراحل وما تم إنجازه.
 
 ## GitHub

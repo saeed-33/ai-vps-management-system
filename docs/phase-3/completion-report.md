@@ -8,6 +8,8 @@
 
 - إنشاء وثيقة خطة المرحلة الثالثة.
 - إنشاء وثيقة نموذج البيانات.
+- إنشاء دليل مخطط قاعدة البيانات وشرح الجداول.
+- إنشاء دليل شرح ملفات Docker.
 - إنشاء migration أولي لقاعدة PostgreSQL.
 - إضافة جداول الهوية والصلاحيات.
 - إضافة جداول السيرفرات والمجموعات والاعتمادات.
@@ -29,6 +31,8 @@
 ```text
 docs/phase-3/phase-3-plan.md
 docs/phase-3/data-model.md
+docs/phase-3/database-schema-guide.md
+docs/phase-3/docker-guide.md
 packages/database/README.md
 packages/database/migrations/0001_initial_schema.sql
 infra/compose/docker-compose.dev.yml

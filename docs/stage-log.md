@@ -94,6 +94,8 @@ https://github.com/saeed-33/ai-vps-management-system
 
 - إنشاء `docs/phase-3/phase-3-plan.md`.
 - إنشاء `docs/phase-3/data-model.md`.
+- إنشاء `docs/phase-3/database-schema-guide.md`.
+- إنشاء `docs/phase-3/docker-guide.md`.
 - إنشاء `docs/phase-3/completion-report.md`.
 - إنشاء `packages/database/migrations/0001_initial_schema.sql`.
 - إنشاء `packages/database/README.md`.
