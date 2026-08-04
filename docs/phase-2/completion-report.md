@@ -2,7 +2,7 @@
 
 ## الحالة
 
-قيد التنفيذ.
+مكتملة محليا.
 
 ## ما تم إنجازه
 
@@ -11,13 +11,37 @@
 - نقل وثائق المرحلة الأولى إلى المشروع الجديد.
 - إنشاء README.
 - إنشاء `.gitignore`.
+- إنشاء `.gitattributes`.
 - إنشاء `.env.example`.
 - إنشاء سجل المراحل.
 - إنشاء خطة المرحلة الثانية.
+- إنشاء قالب Pull Request أولي.
+- تهيئة Git على الفرع `main`.
+- إنشاء commit أول.
 
 ## المتبقي
 
-- تهيئة Git.
-- إنشاء commit أول.
-- فحص إمكانية الربط مع GitHub.
-- تحديث هذا التقرير بالحالة النهائية.
+- ربط المستودع مع GitHub بعد توفر GitHub CLI أو GitHub connector.
+- إنشاء remote repository على GitHub.
+- دفع الفرع `main`.
+
+## Git
+
+```text
+branch: main
+initial_commit: 88e1488 chore: initialize project structure and phase docs
+```
+
+## GitHub
+
+تم فحص GitHub CLI وكانت غير متوفرة على الجهاز:
+
+```text
+gh: not installed
+```
+
+كما لم تظهر أداة GitHub connector قابلة للاستخدام داخل الجلسة. لذلك تم تجهيز المستودع المحلي فقط، وسيتم الربط مع GitHub فور توفر إحدى الأدوات التالية:
+
+- GitHub CLI `gh`.
+- GitHub plugin/connector.
+- remote URL لمستودع منشأ مسبقا.
