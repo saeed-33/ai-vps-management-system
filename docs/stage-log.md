@@ -148,3 +148,38 @@ https://github.com/saeed-33/ai-vps-management-system
 
 - توثيق بنية لوحة الإدارة في `docs/architecture-decisions/adr-001-admin-panel-architecture.md`.
 - توثيق بنية Backend / Control Plane في `docs/architecture-decisions/adr-002-backend-architecture.md`.
+
+## المرحلة الخامسة: Admin Panel Foundation
+
+الحالة: مكتملة.
+
+العمل المطلوب:
+
+- إنشاء أساس لوحة الإدارة.
+- تطبيق البنية القائمة على الميزات.
+- إنشاء layout إداري.
+- إنشاء sidebar.
+- إنشاء dashboard أولي.
+- إنشاء صفحة حالة API.
+- إضافة API client.
+- تشغيل lint وbuild.
+- توثيق المرحلة.
+
+ما تم إنجازه:
+
+- إنشاء تطبيق Next.js داخل `apps/admin-panel`.
+- إنشاء `apps/admin-panel/package.json`.
+- إنشاء `apps/admin-panel/package-lock.json`.
+- إنشاء layout وsidebar.
+- إنشاء dashboard أولي.
+- إنشاء صفحة `api-status`.
+- إنشاء `src/lib/api-client.ts`.
+- إنشاء `docs/phase-5/phase-5-plan.md`.
+- إنشاء `docs/phase-5/admin-panel-foundation.md`.
+- إنشاء `docs/phase-5/completion-report.md`.
+
+التحقق:
+
+- تم تنفيذ `npm run lint`.
+- تم تنفيذ `npm run build`.
+- النتيجة: lint passed وbuild passed.

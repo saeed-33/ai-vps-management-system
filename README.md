@@ -4,7 +4,7 @@
 
 ## الحالة الحالية
 
-المشروع أنهى المرحلة الرابعة: Backend API / Control Plane Foundation.
+المشروع أنهى المرحلة الخامسة: Admin Panel Foundation.
 
 ## القرارات الأساسية
 
@@ -45,6 +45,7 @@ tests/
 - `docs/phase-3/database-schema-guide.md`: مخطط قاعدة البيانات وشرح الجداول.
 - `docs/phase-3/docker-guide.md`: شرح Docker Compose وخدمات التطوير.
 - `docs/phase-4/`: وثائق أساس Backend API / Control Plane.
+- `docs/phase-5/`: وثائق أساس لوحة الإدارة.
 - `docs/architecture-decisions/`: قرارات معمارية موثقة للبنية.
 - `docs/stage-log.md`: سجل المراحل وما تم إنجازه.
 
@@ -61,6 +62,20 @@ uv run uvicorn control_plane_api.main:app --reload --host 127.0.0.1 --port 8000
 ```bash
 cd apps/api
 uv run pytest
+```
+
+## تشغيل لوحة الإدارة
+
+```bash
+cd apps/admin-panel
+npm install --no-audit --no-fund --ignore-scripts
+npm run dev
+```
+
+لوحة الإدارة تعمل على:
+
+```text
+http://127.0.0.1:3000
 ```
 
 ## GitHub
