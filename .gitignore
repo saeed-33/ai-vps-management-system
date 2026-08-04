@@ -1,0 +1,43 @@
+# OS
+Thumbs.db
+Desktop.ini
+
+# Editors
+.vscode/
+.idea/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Local storage
+storage/
+sandbox/temp/
+
+# Secrets
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Databases
+*.sqlite
+*.sqlite3
+*.db
