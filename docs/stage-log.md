@@ -108,3 +108,38 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم التحقق من وجود Docker CLI.
 - تم التحقق من صحة صيغة Docker Compose.
 - لم يتم تطبيق migration لأن Docker daemon غير شغال و`psql` غير مثبت محليا.
+
+## المرحلة الرابعة: Backend API / Control Plane Foundation
+
+الحالة: مكتملة.
+
+العمل المطلوب:
+
+- إنشاء أساس خدمة API.
+- اختيار بنية backend مناسبة.
+- إعداد settings مركزي.
+- إعداد router structure.
+- إضافة health checks.
+- تجهيز database readiness.
+- إضافة اختبارات smoke.
+- توثيق التشغيل المحلي.
+
+ما تم إنجازه:
+
+- إنشاء مشروع FastAPI داخل `apps/api`.
+- إنشاء `apps/api/pyproject.toml`.
+- إنشاء application factory.
+- إضافة `GET /health/live`.
+- إضافة `GET /health/ready`.
+- إضافة `GET /api/v1/meta`.
+- إضافة طبقة database readiness باستخدام SQLAlchemy async.
+- إضافة اختبارات smoke.
+- إنشاء `docs/phase-4/phase-4-plan.md`.
+- إنشاء `docs/phase-4/control-plane-foundation.md`.
+- إنشاء `docs/phase-4/completion-report.md`.
+
+التحقق:
+
+- تم تنفيذ `uv sync --extra dev`.
+- تم تنفيذ `uv run pytest`.
+- النتيجة: `3 passed`.

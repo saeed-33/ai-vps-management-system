@@ -4,7 +4,7 @@
 
 ## الحالة الحالية
 
-المشروع أنهى المرحلة الثالثة: قاعدة البيانات والنماذج الأساسية.
+المشروع أنهى المرحلة الرابعة: Backend API / Control Plane Foundation.
 
 ## القرارات الأساسية
 
@@ -44,7 +44,23 @@ tests/
 - `docs/phase-3/`: وثائق قاعدة البيانات والنماذج الأساسية.
 - `docs/phase-3/database-schema-guide.md`: مخطط قاعدة البيانات وشرح الجداول.
 - `docs/phase-3/docker-guide.md`: شرح Docker Compose وخدمات التطوير.
+- `docs/phase-4/`: وثائق أساس Backend API / Control Plane.
 - `docs/stage-log.md`: سجل المراحل وما تم إنجازه.
+
+## تشغيل API
+
+```bash
+cd apps/api
+uv sync --extra dev
+uv run uvicorn control_plane_api.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+## اختبار API
+
+```bash
+cd apps/api
+uv run pytest
+```
 
 ## GitHub
 
