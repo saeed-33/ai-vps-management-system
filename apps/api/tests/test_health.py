@@ -52,3 +52,4 @@ def test_meta_endpoint_lists_foundation_modules() -> None:
     assert body["service"] == "Test Control Plane"
     assert "health" in module_names
     assert "policy_engine" in module_names
+    assert "auth" in module_names

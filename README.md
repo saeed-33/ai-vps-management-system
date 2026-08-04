@@ -4,7 +4,7 @@
 
 ## الحالة الحالية
 
-المشروع أنهى المرحلة الخامسة: Admin Panel Foundation.
+المشروع أنهى المرحلة السادسة: Auth & RBAC Foundation.
 
 ## القرارات الأساسية
 
@@ -46,6 +46,7 @@ tests/
 - `docs/phase-3/docker-guide.md`: شرح Docker Compose وخدمات التطوير.
 - `docs/phase-4/`: وثائق أساس Backend API / Control Plane.
 - `docs/phase-5/`: وثائق أساس لوحة الإدارة.
+- `docs/phase-6/`: وثائق أساس المصادقة والصلاحيات.
 - `docs/architecture-decisions/`: قرارات معمارية موثقة للبنية.
 - `docs/stage-log.md`: سجل المراحل وما تم إنجازه.
 
@@ -76,6 +77,13 @@ npm run dev
 
 ```text
 http://127.0.0.1:3000
+```
+
+## إنشاء Bootstrap Admin Password Hash
+
+```bash
+cd apps/api
+uv run python scripts/hash_password.py
 ```
 
 ## GitHub

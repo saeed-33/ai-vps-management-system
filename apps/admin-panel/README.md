@@ -12,6 +12,7 @@ This is the phase 5 foundation. It provides:
 - Sidebar navigation.
 - Dashboard foundation.
 - API status page.
+- Bootstrap login page.
 - Shared API client.
 
 It does not yet provide auth, RBAC, CRUD, or agent chat.

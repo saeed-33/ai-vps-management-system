@@ -183,3 +183,42 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run lint`.
 - تم تنفيذ `npm run build`.
 - النتيجة: lint passed وbuild passed.
+
+## المرحلة السادسة: Auth & RBAC Foundation
+
+الحالة: مكتملة.
+
+العمل المطلوب:
+
+- إضافة أساس مصادقة في Backend API.
+- إضافة hashing لكلمات المرور.
+- إضافة JWT access tokens.
+- إضافة bootstrap admin login.
+- إضافة RBAC catalog أولي.
+- إضافة routes للمصادقة.
+- إضافة اختبارات.
+- إضافة صفحة login أولية في لوحة الإدارة.
+- توثيق المرحلة.
+
+ما تم إنجازه:
+
+- إنشاء `apps/api/src/control_plane_api/core/security.py`.
+- إنشاء `apps/api/src/control_plane_api/api/routes/auth.py`.
+- إنشاء `apps/api/src/control_plane_api/schemas/auth.py`.
+- إنشاء `apps/api/src/control_plane_api/modules/auth/rbac.py`.
+- إنشاء `apps/api/scripts/hash_password.py`.
+- إنشاء `apps/api/tests/test_auth.py`.
+- إنشاء `apps/admin-panel/src/app/login/page.tsx`.
+- إنشاء `apps/admin-panel/src/features/auth/components/login-view.tsx`.
+- إنشاء `apps/admin-panel/src/lib/auth-client.ts`.
+- إنشاء `docs/phase-6/phase-6-plan.md`.
+- إنشاء `docs/phase-6/auth-rbac-foundation.md`.
+- إنشاء `docs/phase-6/completion-report.md`.
+
+التحقق:
+
+- تم تنفيذ `uv run pytest`.
+- النتيجة: `10 passed`.
+- تم تنفيذ `npm run lint`.
+- تم تنفيذ `npm run build`.
+- النتيجة: lint passed وbuild passed.

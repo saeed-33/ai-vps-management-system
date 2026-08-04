@@ -317,9 +317,61 @@ textarea {
   height: 16px;
 }
 
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
 .api-box {
   display: grid;
   gap: 14px;
+}
+
+.form-stack {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+  max-width: 520px;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.field input {
+  min-height: 40px;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-strong);
+  color: var(--foreground);
+  padding: 8px 10px;
+}
+
+.field input:focus {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent-soft);
+}
+
+.notice {
+  margin: 16px 0 0;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.notice.success {
+  color: var(--success);
+  background: #e7f6ef;
+}
+
+.notice.danger {
+  color: var(--danger);
+  background: #fde8e8;
 }
 
 .code-line {
