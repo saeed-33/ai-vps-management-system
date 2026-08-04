@@ -40,8 +40,17 @@ initial_commit: 88e1488 chore: initialize project structure and phase docs
 gh: not installed
 ```
 
-كما لم تظهر أداة GitHub connector قابلة للاستخدام داخل الجلسة. لذلك تم تجهيز المستودع المحلي فقط، وسيتم الربط مع GitHub فور توفر إحدى الأدوات التالية:
+تم تثبيت GitHub plugin داخل Codex بعد ذلك. الأدوات المتاحة تسمح بالعمل على مستودع موجود، لكنها لا تعرض أداة إنشاء repository جديد.
+
+تم البحث عن مستودع موجود باسم:
+
+```text
+ai-vps-management-system
+```
+
+ولم يتم العثور عليه.
+
+لذلك تم تجهيز المستودع المحلي فقط، وسيتم الربط مع GitHub فور توفر إحدى الأدوات التالية:
 
 - GitHub CLI `gh`.
-- GitHub plugin/connector.
 - remote URL لمستودع منشأ مسبقا.
