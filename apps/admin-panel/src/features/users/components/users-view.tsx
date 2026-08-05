@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
 import { RefreshCw, Users } from "lucide-react";
 import { getStoredAccessToken } from "@/lib/auth-client";
 import { getRoles, getUsers } from "@/lib/users-client";
@@ -20,20 +19,6 @@ export function UsersView() {
     queryFn: () => getRoles(token ?? ""),
     enabled: Boolean(token),
   });
-
-  if (!token) {
-    return (
-      <div className="page-stack">
-        <section className="card wide-card">
-          <h2 className="section-title">إدارة المستخدمين</h2>
-          <p className="metric-note">يجب تسجيل الدخول أولا لعرض المستخدمين والأدوار.</p>
-          <Link className="button primary" href="/login">
-            تسجيل الدخول
-          </Link>
-        </section>
-      </div>
-    );
-  }
 
   return (
     <div className="page-stack">

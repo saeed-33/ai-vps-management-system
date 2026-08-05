@@ -52,6 +52,27 @@ textarea {
   grid-template-columns: 280px minmax(0, 1fr);
 }
 
+.auth-only {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.login-page {
+  width: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.login-panel {
+  width: min(460px, 100%);
+}
+
+.login-card {
+  padding: 22px;
+}
+
 .sidebar {
   background: #111827;
   color: #f9fafb;
@@ -167,6 +188,41 @@ textarea {
 .page-stack {
   display: grid;
   gap: 22px;
+}
+
+.tabs {
+  display: grid;
+  gap: 16px;
+}
+
+.tab-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab-button {
+  min-height: 38px;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 8px 12px;
+  font-weight: 700;
+}
+
+.tab-button.active {
+  border-color: var(--border);
+  background: var(--panel);
+  color: var(--foreground);
+}
+
+.tab-panel {
+  display: grid;
+  gap: 16px;
 }
 
 .grid {

@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw, ScrollText } from "lucide-react";
-import Link from "next/link";
 import { getStoredAccessToken } from "@/lib/auth-client";
 import { getMonitoringProfiles, getMonitoringProfilesSummary } from "@/lib/monitoring-profiles-client";
 
@@ -20,20 +19,6 @@ export function MonitoringProfilesView() {
     queryFn: () => getMonitoringProfilesSummary(token ?? ""),
     enabled: Boolean(token),
   });
-
-  if (!token) {
-    return (
-      <div className="page-stack">
-        <section className="card wide-card">
-          <h2 className="section-title">ملفات المراقبة</h2>
-          <p className="metric-note">يجب تسجيل الدخول أولا لعرض ملفات المراقبة.</p>
-          <Link className="button primary" href="/login">
-            تسجيل الدخول
-          </Link>
-        </section>
-      </div>
-    );
-  }
 
   const domains = Object.entries(summaryQuery.data?.by_domain ?? {});
 

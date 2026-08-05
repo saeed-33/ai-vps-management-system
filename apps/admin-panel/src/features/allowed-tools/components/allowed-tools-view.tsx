@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw, Wrench } from "lucide-react";
-import Link from "next/link";
 import { getAllowedTools, getAllowedToolsSummary } from "@/lib/allowed-tools-client";
 import { getStoredAccessToken } from "@/lib/auth-client";
 
@@ -20,20 +19,6 @@ export function AllowedToolsView() {
     queryFn: () => getAllowedToolsSummary(token ?? ""),
     enabled: Boolean(token),
   });
-
-  if (!token) {
-    return (
-      <div className="page-stack">
-        <section className="card wide-card">
-          <h2 className="section-title">الأدوات المسموحة</h2>
-          <p className="metric-note">يجب تسجيل الدخول أولا لعرض الأدوات المسموحة.</p>
-          <Link className="button primary" href="/login">
-            تسجيل الدخول
-          </Link>
-        </section>
-      </div>
-    );
-  }
 
   const categories = Object.entries(summaryQuery.data?.by_category ?? {});
 

@@ -2,8 +2,8 @@
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Database, KeyRound, Plus, PlugZap, RefreshCw, Server, ShieldCheck } from "lucide-react";
-import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { Tabs } from "@/components/ui/tabs";
 import { getStoredAccessToken } from "@/lib/auth-client";
 import {
   createServer,
@@ -20,6 +20,7 @@ const DEFAULT_PROFILE = "profile-linux-baseline";
 
 export function ServersView() {
   const token = typeof window === "undefined" ? null : getStoredAccessToken();
+  const [activeTab, setActiveTab] = useState("create");
   const [selectedServerId, setSelectedServerId] = useState("");
   const [newServerName, setNewServerName] = useState("");
   const [newServerHostname, setNewServerHostname] = useState("");
@@ -143,20 +144,6 @@ export function ServersView() {
     sshMutation.reset();
   }
 
-  if (!token) {
-    return (
-      <div className="page-stack">
-        <section className="card wide-card">
-          <h2 className="section-title">إدارة السيرفرات</h2>
-          <p className="metric-note">يجب تسجيل الدخول لإضافة السيرفرات وإعداد SSH.</p>
-          <Link className="button primary" href="/login">
-            تسجيل الدخول
-          </Link>
-        </section>
-      </div>
-    );
-  }
-
   return (
     <div className="page-stack">
       <section className="grid" aria-label="Servers summary">
@@ -166,213 +153,235 @@ export function ServersView() {
         <MetricCard title="معطلة" value={summaryQuery.data?.disabled ?? "-"} note="لا يستخدمها الوكيل." />
       </section>
 
-      <section className="card wide-card">
-        <div className="toolbar">
-          <div>
-            <h2 className="section-title">إضافة سيرفر</h2>
-            <p className="metric-note">أدخل بيانات السيرفر أولا، ثم اختره من القائمة واحفظ إعدادات SSH.</p>
-          </div>
-          <DatabaseStatus servers={servers} />
-        </div>
+      <Tabs
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        tabs={[
+          {
+            id: "create",
+            label: "إضافة سيرفر",
+            content: (
+              <section className="card wide-card">
+                <div className="toolbar">
+                  <div>
+                    <h2 className="section-title">إضافة سيرفر</h2>
+                    <p className="metric-note">أدخل بيانات السيرفر أولا، ثم اختره من القائمة واحفظ إعدادات SSH.</p>
+                  </div>
+                  <DatabaseStatus servers={servers} />
+                </div>
 
-        <form className="form-stack form-wide" onSubmit={handleCreateSubmit}>
-          <div className="form-grid">
-            <label className="field">
-              <span>اسم السيرفر</span>
-              <input
-                dir="ltr"
-                required
-                placeholder="prod-app-01"
-                value={newServerName}
-                onChange={(event) => setNewServerName(event.target.value)}
-              />
-            </label>
-            <label className="field">
-              <span>Hostname</span>
-              <input
-                dir="ltr"
-                required
-                placeholder="prod-app-01.example.com"
-                value={newServerHostname}
-                onChange={(event) => setNewServerHostname(event.target.value)}
-              />
-            </label>
-            <label className="field">
-              <span>IP اختياري</span>
-              <input dir="ltr" placeholder="203.0.113.10" value={newServerIp} onChange={(event) => setNewServerIp(event.target.value)} />
-            </label>
-            <label className="field">
-              <span>نظام التشغيل</span>
-              <select value={newServerOsFamily} onChange={(event) => setNewServerOsFamily(event.target.value)}>
-                <option value="linux">linux</option>
-                <option value="ubuntu">ubuntu</option>
-                <option value="debian">debian</option>
-                <option value="centos">centos</option>
-              </select>
-            </label>
-            <label className="field">
-              <span>البيئة</span>
-              <select value={newServerEnvironment} onChange={(event) => setNewServerEnvironment(event.target.value)}>
-                <option value="production">production</option>
-                <option value="staging">staging</option>
-                <option value="development">development</option>
-              </select>
-            </label>
-            <label className="field">
-              <span>الحالة</span>
-              <select value={newServerStatus} onChange={(event) => setNewServerStatus(event.target.value)}>
-                <option value="active">active</option>
-                <option value="maintenance">maintenance</option>
-                <option value="disabled">disabled</option>
-              </select>
-            </label>
-          </div>
-          <label className="field">
-            <span>ملفات المراقبة</span>
-            <input
-              dir="ltr"
-              value={newServerProfiles}
-              onChange={(event) => setNewServerProfiles(event.target.value)}
-              placeholder="profile-linux-baseline"
-            />
-          </label>
-          <div className="toolbar">
-            <button className="button primary" type="submit" disabled={createMutation.isPending}>
-              <Plus aria-hidden="true" />
-              {createMutation.isPending ? "جاري الإضافة" : "إضافة السيرفر"}
-            </button>
-            {createMutation.isSuccess ? <span className="badge success">تم الحفظ</span> : null}
-          </div>
-        </form>
-        {createMutation.isError ? <p className="notice danger">{errorText(createMutation.error)}</p> : null}
-      </section>
+                <form className="form-stack form-wide" onSubmit={handleCreateSubmit}>
+                  <div className="form-grid">
+                    <label className="field">
+                      <span>اسم السيرفر</span>
+                      <input
+                        dir="ltr"
+                        required
+                        placeholder="prod-app-01"
+                        value={newServerName}
+                        onChange={(event) => setNewServerName(event.target.value)}
+                      />
+                    </label>
+                    <label className="field">
+                      <span>Hostname</span>
+                      <input
+                        dir="ltr"
+                        required
+                        placeholder="prod-app-01.example.com"
+                        value={newServerHostname}
+                        onChange={(event) => setNewServerHostname(event.target.value)}
+                      />
+                    </label>
+                    <label className="field">
+                      <span>IP اختياري</span>
+                      <input dir="ltr" placeholder="203.0.113.10" value={newServerIp} onChange={(event) => setNewServerIp(event.target.value)} />
+                    </label>
+                    <label className="field">
+                      <span>نظام التشغيل</span>
+                      <select value={newServerOsFamily} onChange={(event) => setNewServerOsFamily(event.target.value)}>
+                        <option value="linux">linux</option>
+                        <option value="ubuntu">ubuntu</option>
+                        <option value="debian">debian</option>
+                        <option value="centos">centos</option>
+                      </select>
+                    </label>
+                    <label className="field">
+                      <span>البيئة</span>
+                      <select value={newServerEnvironment} onChange={(event) => setNewServerEnvironment(event.target.value)}>
+                        <option value="production">production</option>
+                        <option value="staging">staging</option>
+                        <option value="development">development</option>
+                      </select>
+                    </label>
+                    <label className="field">
+                      <span>الحالة</span>
+                      <select value={newServerStatus} onChange={(event) => setNewServerStatus(event.target.value)}>
+                        <option value="active">active</option>
+                        <option value="maintenance">maintenance</option>
+                        <option value="disabled">disabled</option>
+                      </select>
+                    </label>
+                  </div>
+                  <label className="field">
+                    <span>ملفات المراقبة</span>
+                    <input
+                      dir="ltr"
+                      value={newServerProfiles}
+                      onChange={(event) => setNewServerProfiles(event.target.value)}
+                      placeholder="profile-linux-baseline"
+                    />
+                  </label>
+                  <div className="toolbar">
+                    <button className="button primary" type="submit" disabled={createMutation.isPending}>
+                      <Plus aria-hidden="true" />
+                      {createMutation.isPending ? "جاري الإضافة" : "إضافة السيرفر"}
+                    </button>
+                    {createMutation.isSuccess ? <span className="badge success">تم الحفظ</span> : null}
+                  </div>
+                </form>
+                {createMutation.isError ? <p className="notice danger">{errorText(createMutation.error)}</p> : null}
+              </section>
+            ),
+          },
+          {
+            id: "list",
+            label: "السيرفرات",
+            content: (
+              <section className="card wide-card">
+                <div className="toolbar">
+                  <div>
+                    <h2 className="section-title">السيرفرات</h2>
+                    <p className="metric-note">اختر سيرفرا لإعداد SSH أو اختبار الاتصال.</p>
+                  </div>
+                  <button
+                    className="button"
+                    type="button"
+                    onClick={() => {
+                      void serversQuery.refetch();
+                      void summaryQuery.refetch();
+                      void selectedServerQuery.refetch();
+                    }}
+                  >
+                    <RefreshCw aria-hidden="true" />
+                    تحديث
+                  </button>
+                </div>
 
-      <section className="card wide-card">
-        <div className="toolbar">
-          <div>
-            <h2 className="section-title">السيرفرات</h2>
-            <p className="metric-note">اختر سيرفرا لإعداد SSH أو اختبار الاتصال.</p>
-          </div>
-          <button
-            className="button"
-            type="button"
-            onClick={() => {
-              void serversQuery.refetch();
-              void summaryQuery.refetch();
-              void selectedServerQuery.refetch();
-            }}
-          >
-            <RefreshCw aria-hidden="true" />
-            تحديث
-          </button>
-        </div>
+                {serversQuery.isError ? <p className="notice danger">{errorText(serversQuery.error)}</p> : null}
 
-        {serversQuery.isError ? <p className="notice danger">{errorText(serversQuery.error)}</p> : null}
+                <ul className="status-list server-list">
+                  {servers.map((server) => (
+                    <li className={`status-row server-row ${selectedServerId === server.id ? "selected" : ""}`} key={server.id}>
+                      <div>
+                        <strong>{server.name}</strong>
+                        <span dir="ltr">{server.hostname}</span>
+                        <span>
+                          {server.environment} / {server.os_family ?? "unknown"} / {server.status}
+                        </span>
+                        <span>{server.monitoring_status}</span>
+                      </div>
+                      <div className="row-actions">
+                        <span className={`badge ${persistenceBadge(server.source)}`}>{persistenceLabel(server.source)}</span>
+                        <button className={selectedServerId === server.id ? "button primary" : "button"} type="button" onClick={() => selectServer(server)}>
+                          {selectedServerId === server.id ? "محدد" : "اختيار"}
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ),
+          },
+          {
+            id: "ssh",
+            label: "إعداد SSH",
+            content: (
+              <section className="card wide-card">
+                <div className="toolbar">
+                  <div>
+                    <h2 className="section-title">إعداد SSH</h2>
+                    <p className="metric-note">
+                      السيرفر المحدد: <span dir="ltr">{selectedServer?.name ?? selectedServerId}</span>
+                    </p>
+                  </div>
+                  <KeyRound aria-hidden="true" />
+                </div>
 
-        <ul className="status-list server-list">
-          {servers.map((server) => (
-            <li className={`status-row server-row ${selectedServerId === server.id ? "selected" : ""}`} key={server.id}>
-              <div>
-                <strong>{server.name}</strong>
-                <span dir="ltr">{server.hostname}</span>
-                <span>
-                  {server.environment} / {server.os_family ?? "unknown"} / {server.status}
-                </span>
-                <span>{server.monitoring_status}</span>
-              </div>
-              <div className="row-actions">
-                <span className={`badge ${persistenceBadge(server.source)}`}>{persistenceLabel(server.source)}</span>
-                <button className={selectedServerId === server.id ? "button primary" : "button"} type="button" onClick={() => selectServer(server)}>
-                  {selectedServerId === server.id ? "محدد" : "اختيار"}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
+                {selectedServer ? <SelectedServerSummary server={selectedServer} /> : null}
 
-      <section className="card wide-card">
-        <div className="toolbar">
-          <div>
-            <h2 className="section-title">إعداد SSH</h2>
-            <p className="metric-note">
-              السيرفر المحدد: <span dir="ltr">{selectedServer?.name ?? selectedServerId}</span>
-            </p>
-          </div>
-          <KeyRound aria-hidden="true" />
-        </div>
+                <form className="form-stack form-wide" onSubmit={handleSshSubmit}>
+                  <label className="field checkbox-field">
+                    <span>تفعيل SSH لهذا السيرفر</span>
+                    <input type="checkbox" checked={sshEnabled} onChange={(event) => setSshEnabled(event.target.checked)} />
+                  </label>
+                  <div className="form-grid">
+                    <label className="field">
+                      <span>Host</span>
+                      <input dir="ltr" value={sshHost} onChange={(event) => setSshHost(event.target.value)} />
+                    </label>
+                    <label className="field">
+                      <span>Port</span>
+                      <input
+                        dir="ltr"
+                        min={1}
+                        max={65535}
+                        type="number"
+                        value={sshPort}
+                        onChange={(event) => setSshPort(Number(event.target.value))}
+                      />
+                    </label>
+                    <label className="field">
+                      <span>Username</span>
+                      <input dir="ltr" value={sshUsername} onChange={(event) => setSshUsername(event.target.value)} />
+                    </label>
+                    <label className="field">
+                      <span>Private key path</span>
+                      <input
+                        dir="ltr"
+                        placeholder="C:\\Users\\SAEED\\.ssh\\id_rsa"
+                        value={sshPrivateKeyPath}
+                        onChange={(event) => setSshPrivateKeyPath(event.target.value)}
+                      />
+                    </label>
+                  </div>
+                  <label className="field">
+                    <span>Password</span>
+                    <input dir="ltr" type="password" value={sshPassword} onChange={(event) => setSshPassword(event.target.value)} />
+                  </label>
 
-        {selectedServer ? <SelectedServerSummary server={selectedServer} /> : null}
+                  <div className="toolbar">
+                    <button className="button primary" type="submit" disabled={sshMutation.isPending || !selectedServer}>
+                      <Server aria-hidden="true" />
+                      {sshMutation.isPending ? "جاري الحفظ" : "حفظ SSH"}
+                    </button>
+                    <button
+                      className="button"
+                      type="button"
+                      disabled={sshTestMutation.isPending || !selectedServer}
+                      onClick={() => sshTestMutation.mutate()}
+                    >
+                      <PlugZap aria-hidden="true" />
+                      {sshTestMutation.isPending ? "جاري الاختبار" : "اختبار SSH"}
+                    </button>
+                  </div>
+                </form>
 
-        <form className="form-stack form-wide" onSubmit={handleSshSubmit}>
-          <label className="field checkbox-field">
-            <span>تفعيل SSH لهذا السيرفر</span>
-            <input type="checkbox" checked={sshEnabled} onChange={(event) => setSshEnabled(event.target.checked)} />
-          </label>
-          <div className="form-grid">
-            <label className="field">
-              <span>Host</span>
-              <input dir="ltr" value={sshHost} onChange={(event) => setSshHost(event.target.value)} />
-            </label>
-            <label className="field">
-              <span>Port</span>
-              <input
-                dir="ltr"
-                min={1}
-                max={65535}
-                type="number"
-                value={sshPort}
-                onChange={(event) => setSshPort(Number(event.target.value))}
-              />
-            </label>
-            <label className="field">
-              <span>Username</span>
-              <input dir="ltr" value={sshUsername} onChange={(event) => setSshUsername(event.target.value)} />
-            </label>
-            <label className="field">
-              <span>Private key path</span>
-              <input
-                dir="ltr"
-                placeholder="C:\\Users\\SAEED\\.ssh\\id_rsa"
-                value={sshPrivateKeyPath}
-                onChange={(event) => setSshPrivateKeyPath(event.target.value)}
-              />
-            </label>
-          </div>
-          <label className="field">
-            <span>Password</span>
-            <input dir="ltr" type="password" value={sshPassword} onChange={(event) => setSshPassword(event.target.value)} />
-          </label>
-
-          <div className="toolbar">
-            <button className="button primary" type="submit" disabled={sshMutation.isPending || !selectedServer}>
-              <Server aria-hidden="true" />
-              {sshMutation.isPending ? "جاري الحفظ" : "حفظ SSH"}
-            </button>
-            <button
-              className="button"
-              type="button"
-              disabled={sshTestMutation.isPending || !selectedServer}
-              onClick={() => sshTestMutation.mutate()}
-            >
-              <PlugZap aria-hidden="true" />
-              {sshTestMutation.isPending ? "جاري الاختبار" : "اختبار SSH"}
-            </button>
-          </div>
-        </form>
-
-        {selectedServer?.ssh_access.has_password ? (
-          <p className="notice">يوجد password محفوظ لهذا السيرفر. اترك الحقل فارغا إذا لم تكن تريد تغييره.</p>
-        ) : null}
-        {sshMutation.isError ? <p className="notice danger">{errorText(sshMutation.error)}</p> : null}
-        {sshMutation.isSuccess ? <p className="notice success">تم حفظ إعدادات SSH. نفذ اختبار الاتصال قبل تشغيل المراقبة.</p> : null}
-        {sshTestMutation.data ? (
-          <p className={`notice ${sshTestMutation.data.ok ? "success" : "danger"}`} dir="ltr">
-            {sshTestMutation.data.detail}
-          </p>
-        ) : null}
-        {sshTestMutation.isError ? <p className="notice danger">{errorText(sshTestMutation.error)}</p> : null}
-      </section>
+                {selectedServer?.ssh_access.has_password ? (
+                  <p className="notice">يوجد password محفوظ لهذا السيرفر. اترك الحقل فارغا إذا لم تكن تريد تغييره.</p>
+                ) : null}
+                {sshMutation.isError ? <p className="notice danger">{errorText(sshMutation.error)}</p> : null}
+                {sshMutation.isSuccess ? <p className="notice success">تم حفظ إعدادات SSH. نفذ اختبار الاتصال قبل تشغيل المراقبة.</p> : null}
+                {sshTestMutation.data ? (
+                  <p className={`notice ${sshTestMutation.data.ok ? "success" : "danger"}`} dir="ltr">
+                    {sshTestMutation.data.detail}
+                  </p>
+                ) : null}
+                {sshTestMutation.isError ? <p className="notice danger">{errorText(sshTestMutation.error)}</p> : null}
+              </section>
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }

@@ -10,18 +10,17 @@ from ai_vps_agent.server_access.models import SshServerAccess
 from control_plane_api.core.config import Settings, get_settings
 from control_plane_api.modules.servers.service import get_active_agent_servers, get_server_ssh_access_config
 from control_plane_api.modules.periodic_monitoring.analysis import analyze_server_report
+from control_plane_api.modules.periodic_monitoring.analysis_reports import build_analysis_reports
 from control_plane_api.modules.periodic_monitoring.persistence import (
     load_periodic_monitoring_cycles,
     persist_periodic_monitoring_cycle,
 )
 from control_plane_api.schemas.periodic_monitoring import (
-    PeriodicMonitoringAnalysisReport,
     PeriodicMonitoringAnalysisReportsListResponse,
     PeriodicMonitoringCycleReport,
     PeriodicMonitoringCyclesListResponse,
     PeriodicMonitoringReportsListResponse,
     PeriodicMonitoringSchedulerStatus,
-    ServerSubAgentReport,
 )
 
 DEFAULT_PROFILE_IDS = ["profile-linux-baseline"]
@@ -162,12 +161,7 @@ async def list_periodic_monitoring_analysis_reports(
     settings: Settings | None = None,
 ) -> PeriodicMonitoringAnalysisReportsListResponse:
     cycles = (await list_periodic_monitoring_cycles(settings)).cycles
-    analysis_reports = [
-        _to_analysis_report(cycle, report)
-        for cycle in cycles
-        for report in cycle.reports
-    ]
-    return PeriodicMonitoringAnalysisReportsListResponse(analysis_reports=analysis_reports)
+    return PeriodicMonitoringAnalysisReportsListResponse(analysis_reports=build_analysis_reports(cycles))
 
 
 async def _get_agent_servers(settings: Settings) -> list[AgentServer]:
@@ -197,24 +191,6 @@ def _with_analysis(cycle: PeriodicMonitoringCycleReport) -> PeriodicMonitoringCy
                 for report in cycle.reports
             ]
         }
-    )
-
-
-def _to_analysis_report(
-    cycle: PeriodicMonitoringCycleReport,
-    report: ServerSubAgentReport,
-) -> PeriodicMonitoringAnalysisReport:
-    return PeriodicMonitoringAnalysisReport(
-        analysis_report_id=f"analysis-{cycle.cycle_id}-{report.server_id}",
-        source_cycle_id=cycle.cycle_id,
-        source_report_id=f"{cycle.cycle_id}:{report.server_id}",
-        server_id=report.server_id,
-        server_name=report.server_name,
-        generated_at=report.completed_at,
-        title=f"Periodic analysis for {report.server_name}",
-        analysis=report.analysis,
-        metrics_count=len(report.metrics),
-        monitoring_profiles=report.monitoring_profiles,
     )
 
 
