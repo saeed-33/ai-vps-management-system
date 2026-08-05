@@ -7,9 +7,12 @@ from ai_vps_agent.periodic_monitoring.collectors import HybridBaselineCollector
 from ai_vps_agent.periodic_monitoring.orchestrator import PeriodicMonitoringAgent
 from ai_vps_agent.server_access.models import SshServerAccess
 
-from control_plane_api.core.config import get_settings
-from control_plane_api.modules.servers.service import FOUNDATION_SERVERS, get_server_ssh_access_config
-from control_plane_api.modules.periodic_monitoring.persistence import persist_periodic_monitoring_cycle
+from control_plane_api.core.config import Settings, get_settings
+from control_plane_api.modules.servers.service import get_active_agent_servers, get_server_ssh_access_config
+from control_plane_api.modules.periodic_monitoring.persistence import (
+    load_periodic_monitoring_cycles,
+    persist_periodic_monitoring_cycle,
+)
 from control_plane_api.schemas.periodic_monitoring import (
     PeriodicMonitoringCycleReport,
     PeriodicMonitoringCyclesListResponse,
@@ -32,11 +35,12 @@ SCHEDULER_LAST_ERROR: str | None = None
 async def run_periodic_monitoring_cycle(*, trigger: str = "manual") -> PeriodicMonitoringCycleReport:
     global SCHEDULER_LAST_ERROR
 
-    cycle = _to_api_cycle(MONITORING_AGENT.run_cycle(servers=_get_agent_servers(), trigger=trigger))
+    settings = get_settings()
+    cycle = _to_api_cycle(MONITORING_AGENT.run_cycle(servers=await _get_agent_servers(settings), trigger=trigger))
     RECENT_CYCLES.insert(0, cycle)
     del RECENT_CYCLES[10:]
     try:
-        await persist_periodic_monitoring_cycle(cycle, get_settings())
+        await persist_periodic_monitoring_cycle(cycle, settings)
     except Exception as exc:  # pragma: no cover - database availability depends on local environment.
         SCHEDULER_LAST_ERROR = f"database persistence skipped: {exc.__class__.__name__}: {exc}"
     return cycle
@@ -111,21 +115,36 @@ async def _scheduler_loop(interval_seconds: int) -> None:
             SCHEDULER_LAST_ERROR = str(exc)
 
 
-def list_periodic_monitoring_cycles() -> PeriodicMonitoringCyclesListResponse:
+async def list_periodic_monitoring_cycles() -> PeriodicMonitoringCyclesListResponse:
+    try:
+        persisted_cycles = await load_periodic_monitoring_cycles(get_settings())
+    except Exception:  # pragma: no cover - database availability depends on local environment.
+        persisted_cycles = None
+    if persisted_cycles is not None:
+        return PeriodicMonitoringCyclesListResponse(cycles=persisted_cycles)
     return PeriodicMonitoringCyclesListResponse(cycles=RECENT_CYCLES)
 
 
-def get_latest_periodic_monitoring_cycle() -> PeriodicMonitoringCycleReport | None:
+async def get_latest_periodic_monitoring_cycle() -> PeriodicMonitoringCycleReport | None:
+    try:
+        persisted_cycles = await load_periodic_monitoring_cycles(get_settings(), limit=1)
+    except Exception:  # pragma: no cover - database availability depends on local environment.
+        persisted_cycles = None
+    if persisted_cycles:
+        return persisted_cycles[0]
     return RECENT_CYCLES[0] if RECENT_CYCLES else None
 
 
-def list_periodic_monitoring_reports() -> PeriodicMonitoringReportsListResponse:
+async def list_periodic_monitoring_reports() -> PeriodicMonitoringReportsListResponse:
+    cycles = (await list_periodic_monitoring_cycles()).cycles
     reports = [report for cycle in RECENT_CYCLES for report in cycle.reports]
+    if cycles:
+        reports = [report for cycle in cycles for report in cycle.reports]
     return PeriodicMonitoringReportsListResponse(reports=reports)
 
 
-def _get_agent_servers() -> list[AgentServer]:
-    settings = get_settings()
+async def _get_agent_servers(settings: Settings) -> list[AgentServer]:
+    servers = await get_active_agent_servers(settings)
     return [
         AgentServer(
             id=server.id,
@@ -133,9 +152,9 @@ def _get_agent_servers() -> list[AgentServer]:
             hostname=server.hostname,
             status=server.status,
             monitoring_profiles=server.assigned_monitoring_profiles or DEFAULT_PROFILE_IDS,
-            ssh=_server_ssh_access(server.id, settings),
+            ssh=await _server_ssh_access(server.id, settings),
         )
-        for server in FOUNDATION_SERVERS
+        for server in servers
     ]
 
 
@@ -143,8 +162,8 @@ def _to_api_cycle(agent_cycle: AgentPeriodicMonitoringCycleReport) -> PeriodicMo
     return PeriodicMonitoringCycleReport.model_validate(agent_cycle.model_dump())
 
 
-def _server_ssh_access(server_id: str, settings: object) -> SshServerAccess | None:
-    configured_access = get_server_ssh_access_config(server_id)
+async def _server_ssh_access(server_id: str, settings: Settings) -> SshServerAccess | None:
+    configured_access = await get_server_ssh_access_config(settings, server_id)
     if configured_access is not None and configured_access.enabled:
         if not configured_access.host or not configured_access.username:
             return None

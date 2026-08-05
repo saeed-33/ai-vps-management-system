@@ -640,3 +640,39 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run lint`.
 - تم تنفيذ `npm run build`.
 - النتيجة: lint passed وbuild passed.
+## Phase 18: Periodic Monitoring Readiness Completion
+
+Status: completed as a practical foundation.
+
+Required work:
+
+- Make server management database-aware.
+- Keep memory fallback when PostgreSQL is unavailable.
+- Add create/update server API.
+- Persist SSH access through `server_credentials` when PostgreSQL is available.
+- Add SSH connection test endpoint.
+- Make periodic monitoring read active servers from the server service.
+- Load periodic monitoring reports from PostgreSQL when available.
+- Update the admin panel server screen.
+- Add tests and documentation.
+
+Completed work:
+
+- Updated `apps/api/src/control_plane_api/modules/servers/service.py`.
+- Updated `apps/api/src/control_plane_api/api/routes/servers.py`.
+- Updated `apps/api/src/control_plane_api/schemas/servers.py`.
+- Updated `apps/api/src/control_plane_api/modules/periodic_monitoring/service.py`.
+- Updated `apps/api/src/control_plane_api/modules/periodic_monitoring/persistence.py`.
+- Updated `apps/agent/src/ai_vps_agent/server_access/ssh_client.py`.
+- Updated `apps/admin-panel/src/lib/servers-client.ts`.
+- Rebuilt `apps/admin-panel/src/features/servers/components/servers-view.tsx`.
+- Updated `apps/api/tests/test_servers.py`.
+- Created `docs/phase-18`.
+
+Verification:
+
+- `uv run pytest` in `apps/api`: `47 passed`.
+- `uv run python -m compileall src scripts` in `apps/api`: passed.
+- `uv run --extra dev pytest` in `apps/agent`: `7 passed`.
+- `npm run lint`: passed.
+- `npm run build`: passed.

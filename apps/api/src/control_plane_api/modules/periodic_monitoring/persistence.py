@@ -4,7 +4,11 @@ from sqlalchemy import text
 
 from control_plane_api.core.config import Settings
 from control_plane_api.core.database import get_session_maker
-from control_plane_api.schemas.periodic_monitoring import PeriodicMonitoringCycleReport
+from control_plane_api.schemas.periodic_monitoring import (
+    MonitoringMetricSample,
+    PeriodicMonitoringCycleReport,
+    ServerSubAgentReport,
+)
 
 
 def stable_uuid(value: str) -> UUID:
@@ -122,3 +126,119 @@ async def persist_periodic_monitoring_cycle(
                         },
                     )
     return True
+
+
+async def load_periodic_monitoring_cycles(
+    settings: Settings,
+    *,
+    limit: int = 10,
+) -> list[PeriodicMonitoringCycleReport] | None:
+    if not settings.database_url:
+        return None
+
+    session_maker = get_session_maker(settings)
+    async with session_maker() as session:
+        cycle_rows = (
+            await session.execute(
+                text(
+                    """
+                    SELECT
+                        id::text AS id,
+                        cycle_key,
+                        status,
+                        started_at,
+                        completed_at,
+                        triggered_by,
+                        summary
+                    FROM monitoring_cycles
+                    ORDER BY completed_at DESC NULLS LAST, created_at DESC
+                    LIMIT :limit
+                    """
+                ),
+                {"limit": limit},
+            )
+        ).mappings().all()
+
+        cycles: list[PeriodicMonitoringCycleReport] = []
+        for cycle_row in cycle_rows:
+            report_rows = (
+                await session.execute(
+                    text(
+                        """
+                        SELECT
+                            r.id::text AS report_id,
+                            r.status,
+                            r.started_at,
+                            r.completed_at,
+                            s.id::text AS server_id,
+                            s.name AS server_name,
+                            s.metadata AS server_metadata
+                        FROM periodic_monitoring_reports r
+                        JOIN servers s ON s.id = r.server_id
+                        WHERE r.cycle_id = :cycle_id
+                        ORDER BY r.created_at ASC
+                        """
+                    ),
+                    {"cycle_id": cycle_row["id"]},
+                )
+            ).mappings().all()
+
+            reports: list[ServerSubAgentReport] = []
+            for report_row in report_rows:
+                metric_rows = (
+                    await session.execute(
+                        text(
+                            """
+                            SELECT value
+                            FROM monitoring_metrics
+                            WHERE report_id = :report_id
+                            ORDER BY created_at ASC
+                            """
+                        ),
+                        {"report_id": report_row["report_id"]},
+                    )
+                ).mappings().all()
+                metadata = _json_object(report_row.get("server_metadata"))
+                reports.append(
+                    ServerSubAgentReport(
+                        sub_agent_id=f"server-sub-agent-{report_row['server_id']}",
+                        server_id=str(report_row["server_id"]),
+                        server_name=str(report_row["server_name"]),
+                        status=str(report_row["status"]),
+                        started_at=report_row["started_at"],
+                        completed_at=report_row["completed_at"],
+                        monitoring_profiles=list(metadata.get("assigned_monitoring_profiles") or []),
+                        metrics=[MonitoringMetricSample.model_validate(_json_object(row["value"])) for row in metric_rows],
+                        raw_snapshot={},
+                        collection_summary="Baseline metrics loaded from PostgreSQL.",
+                    )
+                )
+
+            summary = _json_object(cycle_row["summary"])
+            cycles.append(
+                PeriodicMonitoringCycleReport(
+                    cycle_id=str(cycle_row["cycle_key"]),
+                    trigger=str(cycle_row["triggered_by"]),
+                    status=str(cycle_row["status"]),
+                    started_at=cycle_row["started_at"],
+                    completed_at=cycle_row["completed_at"],
+                    servers_planned=int(summary.get("servers_planned", len(reports))),
+                    servers_checked=int(summary.get("servers_checked", len(reports))),
+                    reports_count=int(summary.get("reports_count", len(reports))),
+                    reports=reports,
+                    scope_note=str(summary.get("scope_note", "Loaded from PostgreSQL.")),
+                )
+            )
+    return cycles
+
+
+def _json_object(value: object) -> dict[str, object]:
+    if value is None:
+        return {}
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        import json
+
+        return dict(json.loads(value))
+    return dict(value)  # type: ignore[arg-type]

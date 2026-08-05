@@ -310,3 +310,4 @@ NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
 ```
 
 إذا ظهر تحذير Next.js عن `@next/swc-win32-x64-msvc` أثناء `npm run build` لكن البناء اكتمل بنجاح، فهو تحذير من حزمة SWC على Windows ولا يمنع تشغيل المشروع في الحالة الحالية.
+Phase 18 note: the `/servers` page can add servers, save SSH settings, and run a read-only SSH test. PostgreSQL is used when available; otherwise the API falls back to memory for local trials.

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ServerSummary(BaseModel):
@@ -25,6 +25,28 @@ class ServersSummaryResponse(BaseModel):
     by_environment: dict[str, int]
 
 
+class ServerCreate(BaseModel):
+    name: str
+    hostname: str
+    ip_address: str | None = None
+    os_family: str | None = "linux"
+    environment: str = "production"
+    status: str = "active"
+    assigned_monitoring_profiles: list[str] = Field(default_factory=list)
+    metadata: dict[str, str] = Field(default_factory=dict)
+
+
+class ServerUpdate(BaseModel):
+    name: str | None = None
+    hostname: str | None = None
+    ip_address: str | None = None
+    os_family: str | None = None
+    environment: str | None = None
+    status: str | None = None
+    assigned_monitoring_profiles: list[str] | None = None
+    metadata: dict[str, str] | None = None
+
+
 class ServerSshAccessPublic(BaseModel):
     enabled: bool
     host: str | None = None
@@ -48,3 +70,11 @@ class ServerDetail(ServerSummary):
     metadata: dict[str, str]
     assigned_monitoring_profiles: list[str]
     ssh_access: ServerSshAccessPublic
+
+
+class ServerSshConnectionTestResult(BaseModel):
+    ok: bool
+    server_id: str
+    command: str | None = None
+    exit_status: int | None = None
+    detail: str

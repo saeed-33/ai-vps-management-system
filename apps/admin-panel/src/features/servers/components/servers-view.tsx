@@ -1,14 +1,26 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { KeyRound, RefreshCw, Server } from "lucide-react";
+import { KeyRound, Plus, PlugZap, RefreshCw, Server } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { getStoredAccessToken } from "@/lib/auth-client";
-import { getServer, getServers, getServersSummary, updateServerSshAccess } from "@/lib/servers-client";
+import {
+  createServer,
+  getServer,
+  getServers,
+  getServersSummary,
+  testServerSshAccess,
+  updateServerSshAccess,
+} from "@/lib/servers-client";
 
 export function ServersView() {
   const token = typeof window === "undefined" ? null : getStoredAccessToken();
+  const [selectedServerId, setSelectedServerId] = useState("srv-foundation-001");
+  const [newServerName, setNewServerName] = useState("");
+  const [newServerHostname, setNewServerHostname] = useState("");
+  const [newServerIp, setNewServerIp] = useState("");
+  const [newServerEnvironment, setNewServerEnvironment] = useState("production");
   const [sshEnabled, setSshEnabled] = useState(false);
   const [sshHost, setSshHost] = useState("");
   const [sshPort, setSshPort] = useState(22);
@@ -28,15 +40,37 @@ export function ServersView() {
     enabled: Boolean(token),
   });
 
-  const foundationServerQuery = useQuery({
-    queryKey: ["servers", "detail", "srv-foundation-001"],
-    queryFn: () => getServer(token ?? "", "srv-foundation-001"),
-    enabled: Boolean(token),
+  const selectedServerQuery = useQuery({
+    queryKey: ["servers", "detail", selectedServerId],
+    queryFn: () => getServer(token ?? "", selectedServerId),
+    enabled: Boolean(token && selectedServerId),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: () =>
+      createServer(token ?? "", {
+        name: newServerName,
+        hostname: newServerHostname,
+        ip_address: newServerIp || null,
+        os_family: "linux",
+        environment: newServerEnvironment,
+        status: "active",
+        assigned_monitoring_profiles: ["profile-linux-baseline"],
+        metadata: {},
+      }),
+    onSuccess: (server) => {
+      setSelectedServerId(server.id);
+      setNewServerName("");
+      setNewServerHostname("");
+      setNewServerIp("");
+      void serversQuery.refetch();
+      void summaryQuery.refetch();
+    },
   });
 
   const sshMutation = useMutation({
     mutationFn: () =>
-      updateServerSshAccess(token ?? "", "srv-foundation-001", {
+      updateServerSshAccess(token ?? "", selectedServerId, {
         enabled: sshEnabled,
         host: sshHost || null,
         port: sshPort,
@@ -46,9 +80,19 @@ export function ServersView() {
       }),
     onSuccess: () => {
       setSshPassword("");
-      void foundationServerQuery.refetch();
+      void selectedServerQuery.refetch();
+      void serversQuery.refetch();
     },
   });
+
+  const sshTestMutation = useMutation({
+    mutationFn: () => testServerSshAccess(token ?? "", selectedServerId),
+  });
+
+  function handleCreateSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    createMutation.mutate();
+  }
 
   function handleSshSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -59,10 +103,10 @@ export function ServersView() {
     return (
       <div className="page-stack">
         <section className="card wide-card">
-          <h2 className="section-title">إدارة السيرفرات</h2>
-          <p className="metric-note">يجب تسجيل الدخول أولا لعرض السيرفرات.</p>
+          <h2 className="section-title">Servers</h2>
+          <p className="metric-note">Sign in to manage servers.</p>
           <Link className="button primary" href="/login">
-            تسجيل الدخول
+            Sign in
           </Link>
         </section>
       </div>
@@ -71,36 +115,73 @@ export function ServersView() {
 
   return (
     <div className="page-stack">
-      <section className="grid" aria-label="ملخص السيرفرات">
+      <section className="grid" aria-label="Servers summary">
         <article className="card metric-card">
-          <p className="card-title">الإجمالي</p>
+          <p className="card-title">Total</p>
           <p className="metric-value">{summaryQuery.data?.total ?? "-"}</p>
-          <p className="metric-note">كل السيرفرات المعرفة حاليا.</p>
+          <p className="metric-note">Registered servers.</p>
         </article>
         <article className="card metric-card">
-          <p className="card-title">نشطة</p>
+          <p className="card-title">Active</p>
           <p className="metric-value">{summaryQuery.data?.active ?? "-"}</p>
-          <p className="metric-note">جاهزة للمراقبة عند ربط الأدوات.</p>
+          <p className="metric-note">Included in periodic monitoring.</p>
         </article>
         <article className="card metric-card">
-          <p className="card-title">صيانة</p>
+          <p className="card-title">Maintenance</p>
           <p className="metric-value">{summaryQuery.data?.maintenance ?? "-"}</p>
-          <p className="metric-note">مستثناة مؤقتا من التشغيل.</p>
+          <p className="metric-note">Excluded from active monitoring.</p>
         </article>
         <article className="card metric-card">
-          <p className="card-title">معطلة</p>
+          <p className="card-title">Disabled</p>
           <p className="metric-value">{summaryQuery.data?.disabled ?? "-"}</p>
-          <p className="metric-note">لا تستخدم في دورات المراقبة.</p>
+          <p className="metric-note">Not used by the agent.</p>
         </article>
+      </section>
+
+      <section className="card side-card">
+        <div className="toolbar">
+          <h2 className="section-title">Add Server</h2>
+          <Plus aria-hidden="true" />
+        </div>
+        <form className="form-stack" onSubmit={handleCreateSubmit}>
+          <label className="field">
+            <span>Name</span>
+            <input dir="ltr" required value={newServerName} onChange={(event) => setNewServerName(event.target.value)} />
+          </label>
+          <label className="field">
+            <span>Hostname</span>
+            <input
+              dir="ltr"
+              required
+              value={newServerHostname}
+              onChange={(event) => setNewServerHostname(event.target.value)}
+            />
+          </label>
+          <label className="field">
+            <span>IP address</span>
+            <input dir="ltr" value={newServerIp} onChange={(event) => setNewServerIp(event.target.value)} />
+          </label>
+          <label className="field">
+            <span>Environment</span>
+            <select value={newServerEnvironment} onChange={(event) => setNewServerEnvironment(event.target.value)}>
+              <option value="production">production</option>
+              <option value="staging">staging</option>
+              <option value="development">development</option>
+            </select>
+          </label>
+          <button className="button primary" type="submit" disabled={createMutation.isPending}>
+            <Plus aria-hidden="true" />
+            {createMutation.isPending ? "Adding" : "Add server"}
+          </button>
+        </form>
+        {createMutation.isError ? <p className="notice danger">Could not add server.</p> : null}
       </section>
 
       <section className="card wide-card">
         <div className="toolbar">
           <div>
-            <h2 className="section-title">السيرفرات</h2>
-            <p className="metric-note">
-              تعرض هذه المرحلة بيانات foundation مؤقتة إلى حين ربط repository وقاعدة البيانات.
-            </p>
+            <h2 className="section-title">Servers</h2>
+            <p className="metric-note">Database-backed when PostgreSQL is available, with memory fallback for local trials.</p>
           </div>
           <button
             className="button primary"
@@ -111,13 +192,11 @@ export function ServersView() {
             }}
           >
             <RefreshCw aria-hidden="true" />
-            تحديث
+            Refresh
           </button>
         </div>
 
-        {serversQuery.isError ? (
-          <p className="notice danger">تعذر تحميل السيرفرات. قد يكون token منتهي الصلاحية.</p>
-        ) : null}
+        {serversQuery.isError ? <p className="notice danger">Could not load servers.</p> : null}
 
         <ul className="status-list">
           {(serversQuery.data?.servers ?? []).map((server) => (
@@ -129,9 +208,9 @@ export function ServersView() {
                   {server.environment} / {server.os_family ?? "unknown"} / {server.monitoring_status}
                 </span>
               </div>
-              <span className={`badge ${server.status === "active" ? "success" : "neutral"}`}>
-                {server.status}
-              </span>
+              <button className="button" type="button" onClick={() => setSelectedServerId(server.id)}>
+                {selectedServerId === server.id ? "selected" : "select"}
+              </button>
             </li>
           ))}
         </ul>
@@ -139,18 +218,16 @@ export function ServersView() {
 
       <section className="card side-card">
         <div className="toolbar">
-          <h2 className="section-title">إعداد SSH مؤقت</h2>
+          <h2 className="section-title">SSH Access</h2>
           <KeyRound aria-hidden="true" />
         </div>
-        <p className="metric-note">الحفظ الحالي داخل ذاكرة API فقط ولا يعرض كلمة المرور بعد حفظها.</p>
+        <p className="metric-note">
+          Selected: <span dir="ltr">{selectedServerId}</span>
+        </p>
         <form className="form-stack" onSubmit={handleSshSubmit}>
           <label className="field">
-            <span>تفعيل SSH</span>
-            <input
-              type="checkbox"
-              checked={sshEnabled}
-              onChange={(event) => setSshEnabled(event.target.checked)}
-            />
+            <span>Enable SSH</span>
+            <input type="checkbox" checked={sshEnabled} onChange={(event) => setSshEnabled(event.target.checked)} />
           </label>
           <label className="field">
             <span>Host</span>
@@ -181,23 +258,35 @@ export function ServersView() {
           </label>
           <label className="field">
             <span>Password</span>
-            <input
-              dir="ltr"
-              type="password"
-              value={sshPassword}
-              onChange={(event) => setSshPassword(event.target.value)}
-            />
+            <input dir="ltr" type="password" value={sshPassword} onChange={(event) => setSshPassword(event.target.value)} />
           </label>
           <button className="button primary" type="submit" disabled={sshMutation.isPending}>
             <Server aria-hidden="true" />
-            {sshMutation.isPending ? "جاري الحفظ" : "حفظ SSH"}
+            {sshMutation.isPending ? "Saving" : "Save SSH"}
           </button>
         </form>
-        {sshMutation.isError ? <p className="notice danger">تعذر حفظ إعدادات SSH.</p> : null}
-        {sshMutation.isSuccess ? <p className="notice success">تم حفظ إعدادات SSH مؤقتا.</p> : null}
+
+        <button
+          className="button"
+          type="button"
+          disabled={sshTestMutation.isPending}
+          onClick={() => sshTestMutation.mutate()}
+        >
+          <PlugZap aria-hidden="true" />
+          {sshTestMutation.isPending ? "Testing" : "Test SSH"}
+        </button>
+
+        {sshMutation.isError ? <p className="notice danger">Could not save SSH settings.</p> : null}
+        {sshMutation.isSuccess ? <p className="notice success">SSH settings saved.</p> : null}
+        {sshTestMutation.data ? (
+          <p className={`notice ${sshTestMutation.data.ok ? "success" : "danger"}`} dir="ltr">
+            {sshTestMutation.data.detail}
+          </p>
+        ) : null}
+        {sshTestMutation.isError ? <p className="notice danger">SSH test request failed.</p> : null}
         <p className="metric-note">
-          الحالة الحالية: {foundationServerQuery.data?.ssh_access.enabled ? "enabled" : "disabled"} /{" "}
-          {foundationServerQuery.data?.ssh_access.auth_method ?? "none"}
+          Current: {selectedServerQuery.data?.ssh_access.enabled ? "enabled" : "disabled"} /{" "}
+          {selectedServerQuery.data?.ssh_access.auth_method ?? "none"}
         </p>
       </section>
     </div>

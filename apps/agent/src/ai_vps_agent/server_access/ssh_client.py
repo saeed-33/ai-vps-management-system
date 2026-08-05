@@ -18,6 +18,7 @@ class SshCommandClient:
             "port": self._access.port,
             "username": self._access.username,
             "known_hosts": None,
+            "connect_timeout": self._access.connect_timeout_seconds,
         }
         if self._access.private_key_path:
             connect_kwargs["client_keys"] = [self._access.private_key_path]

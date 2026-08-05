@@ -1,5 +1,7 @@
 # AI VPS Management System
 
+Current project phase: Phase 18, Periodic Monitoring Readiness Completion.
+
 نظام لإدارة ومراقبة سيرفرات VPS عبر لوحة إدارة ووكيل ذكي مقيد بسياسات واضحة.
 
 ## الحالة الحالية

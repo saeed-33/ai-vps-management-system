@@ -51,7 +51,7 @@ async def periodic_monitoring_cycles(
     principal: Principal = Depends(get_current_principal),
 ) -> PeriodicMonitoringCyclesListResponse:
     require_monitoring_read(principal)
-    return list_periodic_monitoring_cycles()
+    return await list_periodic_monitoring_cycles()
 
 
 @router.get("/cycles/latest", response_model=PeriodicMonitoringCycleReport)
@@ -59,7 +59,7 @@ async def latest_periodic_monitoring_cycle(
     principal: Principal = Depends(get_current_principal),
 ) -> PeriodicMonitoringCycleReport:
     require_monitoring_read(principal)
-    cycle = get_latest_periodic_monitoring_cycle()
+    cycle = await get_latest_periodic_monitoring_cycle()
     if cycle is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -73,7 +73,7 @@ async def periodic_monitoring_reports(
     principal: Principal = Depends(get_current_principal),
 ) -> PeriodicMonitoringReportsListResponse:
     require_monitoring_read(principal)
-    return list_periodic_monitoring_reports()
+    return await list_periodic_monitoring_reports()
 
 
 @router.post("/scheduler/start", response_model=PeriodicMonitoringSchedulerStatus)

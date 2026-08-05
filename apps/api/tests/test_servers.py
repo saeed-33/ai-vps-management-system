@@ -3,11 +3,12 @@ from fastapi.testclient import TestClient
 from control_plane_api.core.config import Settings
 from control_plane_api.core.security import hash_password
 from control_plane_api.main import create_app
-from control_plane_api.modules.servers.service import SSH_ACCESS_STORE
+from control_plane_api.modules.servers.service import MEMORY_SERVER_STORE, SSH_ACCESS_STORE
 
 
 def make_client() -> TestClient:
     SSH_ACCESS_STORE.clear()
+    MEMORY_SERVER_STORE.clear()
     app = create_app(
         Settings(
             app_name="Test Control Plane",
@@ -63,6 +64,53 @@ def test_servers_summary() -> None:
     assert body["total"] == 1
     assert body["active"] == 1
     assert body["by_environment"]["development"] == 1
+
+
+def test_server_create_adds_memory_fallback_server() -> None:
+    client = make_client()
+    token = login(client)
+
+    response = client.post(
+        "/api/v1/servers",
+        json={
+            "name": "prod-app-01",
+            "hostname": "prod-app-01.example.com",
+            "ip_address": "10.0.0.20",
+            "environment": "production",
+            "assigned_monitoring_profiles": ["profile-linux-baseline"],
+        },
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["id"] == "srv-prod-app-01"
+    assert body["source"] == "memory-fallback"
+    assert body["assigned_monitoring_profiles"] == ["profile-linux-baseline"]
+
+    list_response = client.get("/api/v1/servers", headers={"Authorization": f"Bearer {token}"})
+    assert len(list_response.json()["servers"]) == 2
+
+
+def test_server_update_changes_memory_fallback_server() -> None:
+    client = make_client()
+    token = login(client)
+
+    client.post(
+        "/api/v1/servers",
+        json={"name": "stage-db-01", "hostname": "stage-db-01.example.com", "environment": "staging"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    response = client.put(
+        "/api/v1/servers/srv-stage-db-01",
+        json={"status": "maintenance", "os_family": "linux"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "maintenance"
+    assert body["os_family"] == "linux"
 
 
 def test_server_detail() -> None:
@@ -123,6 +171,33 @@ def test_server_ssh_access_update_masks_secret() -> None:
     assert body["auth_method"] == "password"
     assert body["has_password"] is True
     assert "password" not in body
+
+
+def test_server_ssh_access_test_reports_disabled_configuration() -> None:
+    client = make_client()
+    token = login(client)
+
+    response = client.post(
+        "/api/v1/servers/srv-foundation-001/ssh-access/test",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["ok"] is False
+    assert body["detail"] == "SSH access is not enabled for this server."
+
+
+def test_server_ssh_access_test_not_found() -> None:
+    client = make_client()
+    token = login(client)
+
+    response = client.post(
+        "/api/v1/servers/missing/ssh-access/test",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 404
 
 
 def test_server_detail_includes_masked_ssh_access() -> None:
