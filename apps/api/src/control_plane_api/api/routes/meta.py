@@ -20,6 +20,7 @@ async def meta(settings: Settings = Depends(get_app_settings)) -> ServiceMetadat
             ModuleStatus(name="users", status="foundation-ready"),
             ModuleStatus(name="servers", status="foundation-ready"),
             ModuleStatus(name="monitoring_profiles", status="foundation-ready"),
+            ModuleStatus(name="periodic_monitoring", status="foundation-ready"),
             ModuleStatus(name="specialist_agents", status="foundation-ready"),
             ModuleStatus(name="issues", status="planned"),
             ModuleStatus(name="reports", status="planned"),

@@ -22,6 +22,7 @@ const navigationGroups = [
     items: [
       { label: "Dashboard", href: "/", icon: Gauge },
       { label: "حالة API", href: "/api-status", icon: Activity },
+      { label: "المراقبة الدورية", href: "/periodic-monitoring", icon: Activity },
       { label: "السيرفرات", href: "/servers", icon: Server },
       { label: "المشكلات", href: "#issues", icon: TriangleAlert },
       { label: "التقارير", href: "#reports", icon: FileText },

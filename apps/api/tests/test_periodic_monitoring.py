@@ -1,0 +1,90 @@
+from fastapi.testclient import TestClient
+
+from control_plane_api.core.config import Settings
+from control_plane_api.core.security import hash_password
+from control_plane_api.main import create_app
+from control_plane_api.modules.periodic_monitoring.service import RECENT_CYCLES
+
+
+def make_client() -> TestClient:
+    RECENT_CYCLES.clear()
+    app = create_app(
+        Settings(
+            app_name="Test Control Plane",
+            app_env="test",
+            auth_secret_key="test-secret",
+            bootstrap_admin_email="admin@example.com",
+            bootstrap_admin_password_hash=hash_password("correct-password"),
+            database_url="",
+            redis_url="",
+        )
+    )
+    return TestClient(app)
+
+
+def login(client: TestClient) -> str:
+    response = client.post(
+        "/api/v1/auth/token",
+        json={"email": "admin@example.com", "password": "correct-password"},
+    )
+    assert response.status_code == 200
+    return str(response.json()["access_token"])
+
+
+def test_periodic_monitoring_requires_auth() -> None:
+    client = make_client()
+
+    response = client.post("/api/v1/periodic-monitoring/cycles")
+
+    assert response.status_code == 401
+
+
+def test_latest_cycle_not_found_before_run() -> None:
+    client = make_client()
+    token = login(client)
+
+    response = client.get(
+        "/api/v1/periodic-monitoring/cycles/latest",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 404
+
+
+def test_periodic_monitoring_cycle_produces_report_only() -> None:
+    client = make_client()
+    token = login(client)
+
+    response = client.post(
+        "/api/v1/periodic-monitoring/cycles",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "completed"
+    assert body["servers_planned"] == 1
+    assert body["servers_checked"] == 1
+    assert body["reports_count"] == 1
+    assert "No issue analysis" in body["scope_note"]
+    assert body["reports"][0]["sub_agent_id"] == "server-sub-agent-srv-foundation-001"
+    assert len(body["reports"][0]["metrics"]) == 5
+
+
+def test_periodic_monitoring_lists_created_reports() -> None:
+    client = make_client()
+    token = login(client)
+
+    client.post(
+        "/api/v1/periodic-monitoring/cycles",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    response = client.get(
+        "/api/v1/periodic-monitoring/reports",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["reports"]) >= 1
+    assert body["reports"][0]["collection_summary"] == "Baseline metrics collected successfully from foundation fixture."

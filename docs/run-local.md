@@ -178,6 +178,7 @@ http://127.0.0.1:3000/login
 
 ```text
 http://127.0.0.1:3000/users
+http://127.0.0.1:3000/periodic-monitoring
 http://127.0.0.1:3000/servers
 http://127.0.0.1:3000/monitoring-profiles
 http://127.0.0.1:3000/specialist-agents

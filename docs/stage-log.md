@@ -184,6 +184,43 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run build`.
 - النتيجة: lint passed وbuild passed.
 
+## المرحلة الثانية عشرة: Periodic Monitoring Reports Foundation
+
+الحالة: مكتملة.
+
+العمل المطلوب:
+
+- إضافة قدرة تشغيل دورة مراقبة دورية.
+- إنشاء Server Sub-Agent منطقي لكل سيرفر نشط.
+- إنتاج تقرير مراقبة دوري لكل سيرفر.
+- إضافة endpoints لتشغيل وعرض الدورات والتقارير.
+- إضافة صفحة المراقبة الدورية في لوحة الإدارة.
+- ضمان أن المرحلة تنتج تقارير فقط بدون تحليل أو حلول.
+- إضافة اختبارات.
+- توثيق المرحلة.
+
+ما تم إنجازه:
+
+- إنشاء `apps/api/src/control_plane_api/schemas/periodic_monitoring.py`.
+- إنشاء `apps/api/src/control_plane_api/modules/periodic_monitoring/service.py`.
+- إنشاء `apps/api/src/control_plane_api/api/routes/periodic_monitoring.py`.
+- إنشاء `apps/api/tests/test_periodic_monitoring.py`.
+- إنشاء `apps/admin-panel/src/app/periodic-monitoring/page.tsx`.
+- إنشاء `apps/admin-panel/src/features/periodic-monitoring/components/periodic-monitoring-view.tsx`.
+- إنشاء `apps/admin-panel/src/lib/periodic-monitoring-client.ts`.
+- إنشاء `docs/phase-12/phase-12-plan.md`.
+- إنشاء `docs/phase-12/periodic-monitoring-reports-foundation.md`.
+- إنشاء `docs/phase-12/completion-report.md`.
+
+التحقق:
+
+- تم تنفيذ `uv run pytest`.
+- النتيجة: `38 passed`.
+- تم تنفيذ `uv run python -m compileall src scripts`.
+- تم تنفيذ `npm run lint`.
+- تم تنفيذ `npm run build`.
+- النتيجة: lint passed وbuild passed.
+
 ## المرحلة الحادية عشرة: Allowed Tools Management Foundation
 
 الحالة: مكتملة.
