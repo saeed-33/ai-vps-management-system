@@ -78,9 +78,9 @@ To produce final analysis reports locally, run Ollama and set:
 ```env
 LLM_ANALYSIS_ENABLED=true
 LLM_ANALYSIS_PROVIDER=ollama
-LLM_ANALYSIS_MODEL=llama3.1
+LLM_ANALYSIS_MODEL=gemma4:latest
 LLM_ANALYSIS_BASE_URL=http://127.0.0.1:11434
-LLM_ANALYSIS_TIMEOUT_SECONDS=20
+LLM_ANALYSIS_TIMEOUT_SECONDS=60
 ```
 
 If LLM is disabled or the LLM call fails, the monitoring cycle still completes, but the analysis report status becomes `analysis_unavailable` or `analysis_failed`. No rule-based fallback is emitted as final analysis.

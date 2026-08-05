@@ -1079,3 +1079,31 @@ Verification:
 - `uv run python -m compileall src scripts` in `apps/api`: passed.
 - `npm run lint` in `apps/admin-panel`: passed.
 - `npm run build` in `apps/admin-panel`: passed.
+## Phase 33: Ollama LLM Runtime Configuration
+
+Status: completed.
+
+Required work:
+
+- Enable local LLM report analysis through Ollama.
+- Configure the API `.env` with a locally available model.
+- Keep LLM final analysis enabled for local development.
+- Document the required Ollama settings.
+
+Completed work:
+
+- Verified Ollama is installed and serving locally.
+- Detected `gemma4:latest` as an available model.
+- Set `LLM_ANALYSIS_ENABLED=true`.
+- Set `LLM_ANALYSIS_PROVIDER=ollama`.
+- Set `LLM_ANALYSIS_MODEL=gemma4:latest`.
+- Set `LLM_ANALYSIS_TIMEOUT_SECONDS=60`.
+- Updated `.env.example`, `apps/api/README.md`, and `docs/phase-33`.
+
+Verification:
+
+- Ollama `/api/tags`: reachable.
+- Ollama `/api/generate` with `gemma4:latest` and JSON format: returned valid JSON.
+- `uv run pytest tests/test_periodic_monitoring.py` in `apps/api`: passed, 11 tests.
+- Backend `/health/ready`: ready after restart.
+- Admin panel `/periodic-monitoring`: HTTP 200 after restart.

@@ -22,6 +22,8 @@ def make_client() -> TestClient:
             bootstrap_admin_password_hash=hash_password("correct-password"),
             database_url="",
             redis_url="",
+            llm_analysis_enabled=False,
+            llm_analysis_provider="disabled",
         )
     )
     return TestClient(app)
