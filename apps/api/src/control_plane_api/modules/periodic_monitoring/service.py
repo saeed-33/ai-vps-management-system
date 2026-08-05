@@ -15,10 +15,13 @@ from control_plane_api.modules.periodic_monitoring.persistence import (
     persist_periodic_monitoring_cycle,
 )
 from control_plane_api.schemas.periodic_monitoring import (
+    PeriodicMonitoringAnalysisReport,
+    PeriodicMonitoringAnalysisReportsListResponse,
     PeriodicMonitoringCycleReport,
     PeriodicMonitoringCyclesListResponse,
     PeriodicMonitoringReportsListResponse,
     PeriodicMonitoringSchedulerStatus,
+    ServerSubAgentReport,
 )
 
 DEFAULT_PROFILE_IDS = ["profile-linux-baseline"]
@@ -155,6 +158,18 @@ async def list_periodic_monitoring_reports(settings: Settings | None = None) -> 
     return PeriodicMonitoringReportsListResponse(reports=reports)
 
 
+async def list_periodic_monitoring_analysis_reports(
+    settings: Settings | None = None,
+) -> PeriodicMonitoringAnalysisReportsListResponse:
+    cycles = (await list_periodic_monitoring_cycles(settings)).cycles
+    analysis_reports = [
+        _to_analysis_report(cycle, report)
+        for cycle in cycles
+        for report in cycle.reports
+    ]
+    return PeriodicMonitoringAnalysisReportsListResponse(analysis_reports=analysis_reports)
+
+
 async def _get_agent_servers(settings: Settings) -> list[AgentServer]:
     servers = await get_active_agent_servers(settings)
     return [
@@ -182,6 +197,24 @@ def _with_analysis(cycle: PeriodicMonitoringCycleReport) -> PeriodicMonitoringCy
                 for report in cycle.reports
             ]
         }
+    )
+
+
+def _to_analysis_report(
+    cycle: PeriodicMonitoringCycleReport,
+    report: ServerSubAgentReport,
+) -> PeriodicMonitoringAnalysisReport:
+    return PeriodicMonitoringAnalysisReport(
+        analysis_report_id=f"analysis-{cycle.cycle_id}-{report.server_id}",
+        source_cycle_id=cycle.cycle_id,
+        source_report_id=f"{cycle.cycle_id}:{report.server_id}",
+        server_id=report.server_id,
+        server_name=report.server_name,
+        generated_at=report.completed_at,
+        title=f"Periodic analysis for {report.server_name}",
+        analysis=report.analysis,
+        metrics_count=len(report.metrics),
+        monitoring_profiles=report.monitoring_profiles,
     )
 
 

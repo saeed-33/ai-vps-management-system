@@ -169,6 +169,31 @@ def test_periodic_monitoring_lists_created_reports() -> None:
     assert body["reports"][0]["collection_summary"] == "Baseline metrics collected successfully by periodic monitoring agent."
 
 
+def test_periodic_monitoring_lists_separate_analysis_reports() -> None:
+    client = make_client()
+    token = login(client)
+
+    cycle_response = client.post(
+        "/api/v1/periodic-monitoring/cycles",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    cycle = cycle_response.json()
+
+    response = client.get(
+        "/api/v1/periodic-monitoring/analysis-reports",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["analysis_reports"]) == 1
+    analysis_report = body["analysis_reports"][0]
+    assert analysis_report["source_cycle_id"] == cycle["cycle_id"]
+    assert analysis_report["server_id"] == cycle["reports"][0]["server_id"]
+    assert analysis_report["analysis"]["status"] == "no_issue"
+    assert analysis_report["metrics_count"] == 5
+
+
 def test_periodic_monitoring_scheduler_start_status_and_stop() -> None:
     with make_client() as client:
         token = login(client)

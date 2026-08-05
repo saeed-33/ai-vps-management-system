@@ -62,6 +62,23 @@ export type PeriodicMonitoringCyclesListResponse = {
   cycles: PeriodicMonitoringCycleReport[];
 };
 
+export type PeriodicMonitoringAnalysisReport = {
+  analysis_report_id: string;
+  source_cycle_id: string;
+  source_report_id: string;
+  server_id: string;
+  server_name: string;
+  generated_at: string;
+  title: string;
+  analysis: MonitoringReportAnalysis;
+  metrics_count: number;
+  monitoring_profiles: string[];
+};
+
+export type PeriodicMonitoringAnalysisReportsListResponse = {
+  analysis_reports: PeriodicMonitoringAnalysisReport[];
+};
+
 export type PeriodicMonitoringSchedulerStatus = {
   enabled: boolean;
   interval_seconds: number | null;
@@ -97,6 +114,10 @@ export function startPeriodicMonitoringCycle(token: string) {
 
 export function getPeriodicMonitoringCycles(token: string) {
   return requestJson<PeriodicMonitoringCyclesListResponse>("/api/v1/periodic-monitoring/cycles", token);
+}
+
+export function getPeriodicMonitoringAnalysisReports(token: string) {
+  return requestJson<PeriodicMonitoringAnalysisReportsListResponse>("/api/v1/periodic-monitoring/analysis-reports", token);
 }
 
 export function getPeriodicMonitoringSchedulerStatus(token: string) {

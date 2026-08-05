@@ -6,12 +6,14 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { getStoredAccessToken } from "@/lib/auth-client";
 import {
+  getPeriodicMonitoringAnalysisReports,
   getPeriodicMonitoringCycles,
   getPeriodicMonitoringSchedulerStatus,
   startPeriodicMonitoringCycle,
   startPeriodicMonitoringScheduler,
   stopPeriodicMonitoringScheduler,
   type MonitoringMetricSample,
+  type PeriodicMonitoringAnalysisReport,
   type PeriodicMonitoringCycleReport,
   type ServerSubAgentReport,
 } from "@/lib/periodic-monitoring-client";
@@ -33,11 +35,18 @@ export function PeriodicMonitoringView() {
     enabled: Boolean(token),
   });
 
+  const analysisReportsQuery = useQuery({
+    queryKey: ["periodic-monitoring", "analysis-reports"],
+    queryFn: () => getPeriodicMonitoringAnalysisReports(token ?? ""),
+    enabled: Boolean(token),
+  });
+
   const startMutation = useMutation({
     mutationFn: () => startPeriodicMonitoringCycle(token ?? ""),
     onSuccess: (cycle) => {
       setSelectedCycleId(cycle.cycle_id);
       void cyclesQuery.refetch();
+      void analysisReportsQuery.refetch();
       void schedulerQuery.refetch();
     },
   });
@@ -47,6 +56,7 @@ export function PeriodicMonitoringView() {
     onSuccess: () => {
       void schedulerQuery.refetch();
       void cyclesQuery.refetch();
+      void analysisReportsQuery.refetch();
     },
   });
 
@@ -60,6 +70,7 @@ export function PeriodicMonitoringView() {
   const cycles = useMemo(() => cyclesQuery.data?.cycles ?? [], [cyclesQuery.data?.cycles]);
   const selectedCycle = cycles.find((cycle) => cycle.cycle_id === selectedCycleId) ?? cycles[0] ?? null;
   const allReports = cycles.flatMap((cycle) => cycle.reports);
+  const analysisReports = analysisReportsQuery.data?.analysis_reports ?? [];
   const failedReports = allReports.filter((report) => report.status !== "completed").length;
   const totalMetrics = allReports.reduce((sum, report) => sum + report.metrics.length, 0);
 
@@ -98,6 +109,7 @@ export function PeriodicMonitoringView() {
               type="button"
               onClick={() => {
                 void cyclesQuery.refetch();
+                void analysisReportsQuery.refetch();
                 void schedulerQuery.refetch();
               }}
             >
@@ -221,6 +233,25 @@ export function PeriodicMonitoringView() {
             <p className="notice">لا توجد دورة محددة.</p>
           )}
         </section>
+      </section>
+
+      <section className="card wide-card">
+        <div className="toolbar">
+          <div>
+            <h2 className="section-title">تقارير التحليل</h2>
+            <p className="metric-note">تقارير مستقلة ناتجة عن تحليل تقارير المراقبة الدورية.</p>
+          </div>
+          <span className="badge neutral">{analysisReports.length} reports</span>
+        </div>
+        {analysisReports.length === 0 ? (
+          <p className="notice">لا توجد تقارير تحليل بعد. شغل دورة مراقبة أولا.</p>
+        ) : (
+          <div className="analysis-report-grid">
+            {analysisReports.map((report) => (
+              <AnalysisReportCard key={report.analysis_report_id} report={report} />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
@@ -352,6 +383,33 @@ function MetricSampleCard({ metric }: { metric: MonitoringMetricSample }) {
         {metric.domain} / {metric.source_tool}
       </small>
     </div>
+  );
+}
+
+function AnalysisReportCard({ report }: { report: PeriodicMonitoringAnalysisReport }) {
+  return (
+    <article className="analysis-report-card">
+      <div className="toolbar">
+        <div>
+          <strong>{report.title}</strong>
+          <p className="metric-note">{formatDate(report.generated_at)}</p>
+        </div>
+        <span className={`badge ${analysisBadge(report.analysis.severity)}`}>{report.analysis.severity}</span>
+      </div>
+      <p>{report.analysis.summary}</p>
+      <div className="server-report-meta">
+        <span>{report.metrics_count} metrics</span>
+        <span>{report.monitoring_profiles.join(", ") || "no profiles"}</span>
+        <span>{report.analysis.status}</span>
+      </div>
+      {report.analysis.next_actions.length > 0 ? (
+        <ul className="next-action-list">
+          {report.analysis.next_actions.map((action) => (
+            <li key={action}>{action}</li>
+          ))}
+        </ul>
+      ) : null}
+    </article>
   );
 }
 

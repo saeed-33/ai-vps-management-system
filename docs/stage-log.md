@@ -2,6 +2,38 @@
 
 هذا الملف يوثق العمل المطلوب وما تم إنجازه في كل مرحلة.
 
+## المرحلة السادسة والعشرون: تقارير تحليل دورية منفصلة
+
+الحالة: مكتملة.
+
+العمل المطلوب:
+
+- التأكد أن تحليل التقارير الدورية يصدر كتقارير تحليل منفصلة.
+- إضافة endpoint مستقل لتقارير التحليل.
+- ربط تقرير التحليل بالدورة وتقرير السيرفر الأصلي.
+- عرض تقارير التحليل في لوحة الإدارة.
+- إضافة اختبار يثبت إصدار تقرير تحليل منفصل بعد تشغيل دورة مراقبة.
+
+ما تم إنجازه:
+
+- إضافة `PeriodicMonitoringAnalysisReport`.
+- إضافة `PeriodicMonitoringAnalysisReportsListResponse`.
+- إضافة `GET /api/v1/periodic-monitoring/analysis-reports`.
+- إضافة projection من دورات المراقبة المحفوظة إلى تقارير تحليل مستقلة.
+- تحديث client لوحة الإدارة.
+- إضافة قسم `تقارير التحليل` في صفحة المراقبة الدورية.
+- تحديث اختبارات API.
+- إنشاء `docs/phase-26/phase-26-plan.md`.
+- إنشاء `docs/phase-26/completion-report.md`.
+
+التحقق:
+
+- `uv run pytest` داخل `apps/api`: نجح، 51 اختبارا.
+- `uv run --extra dev pytest` داخل `apps/agent`: نجح، 8 اختبارات.
+- `uv run python -m compileall src scripts` داخل `apps/api`: نجح.
+- `npm run lint` داخل `apps/admin-panel`: نجح.
+- `npm run build` داخل `apps/admin-panel`: نجح.
+
 ## المرحلة الخامسة والعشرون: تحليل تقارير مرتبط بملفات المراقبة
 
 الحالة: مكتملة.

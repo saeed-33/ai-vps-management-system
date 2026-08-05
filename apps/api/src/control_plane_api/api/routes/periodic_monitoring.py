@@ -5,6 +5,7 @@ from control_plane_api.core.config import Settings
 from control_plane_api.modules.periodic_monitoring.service import (
     get_periodic_monitoring_scheduler_status,
     get_latest_periodic_monitoring_cycle,
+    list_periodic_monitoring_analysis_reports,
     list_periodic_monitoring_cycles,
     list_periodic_monitoring_reports,
     run_periodic_monitoring_cycle,
@@ -15,6 +16,7 @@ from control_plane_api.schemas.auth import Principal
 from control_plane_api.schemas.periodic_monitoring import (
     PeriodicMonitoringCycleReport,
     PeriodicMonitoringCyclesListResponse,
+    PeriodicMonitoringAnalysisReportsListResponse,
     PeriodicMonitoringReportsListResponse,
     PeriodicMonitoringSchedulerStartRequest,
     PeriodicMonitoringSchedulerStatus,
@@ -79,6 +81,15 @@ async def periodic_monitoring_reports(
 ) -> PeriodicMonitoringReportsListResponse:
     require_monitoring_read(principal)
     return await list_periodic_monitoring_reports(settings)
+
+
+@router.get("/analysis-reports", response_model=PeriodicMonitoringAnalysisReportsListResponse)
+async def periodic_monitoring_analysis_reports(
+    principal: Principal = Depends(get_current_principal),
+    settings: Settings = Depends(get_app_settings),
+) -> PeriodicMonitoringAnalysisReportsListResponse:
+    require_monitoring_read(principal)
+    return await list_periodic_monitoring_analysis_reports(settings)
 
 
 @router.post("/scheduler/start", response_model=PeriodicMonitoringSchedulerStatus)

@@ -70,6 +70,23 @@ class PeriodicMonitoringReportsListResponse(BaseModel):
     reports: list[ServerSubAgentReport]
 
 
+class PeriodicMonitoringAnalysisReport(BaseModel):
+    analysis_report_id: str
+    source_cycle_id: str
+    source_report_id: str
+    server_id: str
+    server_name: str
+    generated_at: datetime
+    title: str
+    analysis: MonitoringReportAnalysis
+    metrics_count: int
+    monitoring_profiles: list[str]
+
+
+class PeriodicMonitoringAnalysisReportsListResponse(BaseModel):
+    analysis_reports: list[PeriodicMonitoringAnalysisReport]
+
+
 class PeriodicMonitoringSchedulerStartRequest(BaseModel):
     interval_seconds: int = Field(default=300, ge=1, le=86400)
 
