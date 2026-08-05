@@ -4,7 +4,7 @@
 
 ## الحالة الحالية
 
-المشروع أنهى المرحلة السابعة: Users & Roles Management Foundation.
+المشروع أنهى المرحلة الثامنة: Servers Management Foundation.
 
 ## القرارات الأساسية
 
@@ -48,6 +48,7 @@ tests/
 - `docs/phase-5/`: وثائق أساس لوحة الإدارة.
 - `docs/phase-6/`: وثائق أساس المصادقة والصلاحيات.
 - `docs/phase-7/`: وثائق أساس إدارة المستخدمين والأدوار.
+- `docs/phase-8/`: وثائق أساس إدارة السيرفرات.
 - `docs/architecture-decisions/`: قرارات معمارية موثقة للبنية.
 - `docs/stage-log.md`: سجل المراحل وما تم إنجازه.
 

@@ -257,3 +257,40 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run lint`.
 - تم تنفيذ `npm run build`.
 - النتيجة: lint passed وbuild passed.
+
+## المرحلة الثامنة: Servers Management Foundation
+
+الحالة: مكتملة.
+
+العمل المطلوب:
+
+- إضافة أساس API لإدارة السيرفرات.
+- إضافة endpoints لقائمة السيرفرات وملخصها وتفاصيل سيرفر واحد.
+- حماية endpoints السيرفرات بالمصادقة وصلاحية `servers.read`.
+- إضافة صفحة السيرفرات في لوحة الإدارة.
+- ربط صفحة السيرفرات بعميل API.
+- تحديث لوحة المعلومات لتعكس fixture السيرفرات الحالية.
+- إضافة اختبارات.
+- توثيق المرحلة.
+
+ما تم إنجازه:
+
+- إنشاء `apps/api/src/control_plane_api/schemas/servers.py`.
+- إنشاء `apps/api/src/control_plane_api/modules/servers/service.py`.
+- إنشاء `apps/api/src/control_plane_api/api/routes/servers.py`.
+- إنشاء `apps/api/tests/test_servers.py`.
+- إنشاء `apps/admin-panel/src/app/servers/page.tsx`.
+- إنشاء `apps/admin-panel/src/features/servers/components/servers-view.tsx`.
+- إنشاء `apps/admin-panel/src/lib/servers-client.ts`.
+- إنشاء `docs/phase-8/phase-8-plan.md`.
+- إنشاء `docs/phase-8/servers-foundation.md`.
+- إنشاء `docs/phase-8/completion-report.md`.
+
+التحقق:
+
+- تم تنفيذ `uv run pytest`.
+- النتيجة: `19 passed`.
+- تم تنفيذ `uv run python -m compileall src scripts`.
+- تم تنفيذ `npm run lint`.
+- تم تنفيذ `npm run build`.
+- النتيجة: lint passed وbuild passed.

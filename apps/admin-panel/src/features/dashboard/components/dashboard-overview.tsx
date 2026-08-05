@@ -3,8 +3,8 @@ import { Activity, FileWarning, Server, UserRound } from "lucide-react";
 const metrics = [
   {
     label: "السيرفرات",
-    value: "0",
-    note: "جاهزة للربط بعد بناء API modules",
+    value: "1",
+    note: "سيرفر foundation مؤقت إلى حين ربط قاعدة البيانات",
     icon: Server,
   },
   {

@@ -4,7 +4,7 @@ FastAPI service for the AI VPS Management System control plane.
 
 ## Current Scope
 
-This is the phase 4 foundation. It provides:
+This is the phase 8 foundation. It provides:
 
 - Application factory.
 - Central settings.
@@ -13,9 +13,11 @@ This is the phase 4 foundation. It provides:
 - Metadata endpoint.
 - Async SQLAlchemy database readiness check.
 - Bootstrap auth foundation.
+- Users and roles foundation endpoints.
+- Servers foundation endpoints.
 - Smoke tests.
 
-It does not yet provide auth, RBAC, CRUD, MCP, or agent integration.
+It does not yet provide database-backed CRUD, MCP, or agent integration.
 
 ## Install
 
@@ -59,4 +61,7 @@ GET /api/v1/auth/rbac
 GET /api/v1/users
 GET /api/v1/users/me
 GET /api/v1/users/roles
+GET /api/v1/servers
+GET /api/v1/servers/summary
+GET /api/v1/servers/{server_id}
 ```

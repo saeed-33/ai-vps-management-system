@@ -4,7 +4,7 @@ Next.js admin panel for the AI VPS Management System.
 
 ## Current Scope
 
-This is the phase 5 foundation. It provides:
+This is the phase 8 foundation. It provides:
 
 - App Router setup.
 - TypeScript.
@@ -14,9 +14,10 @@ This is the phase 5 foundation. It provides:
 - API status page.
 - Bootstrap login page.
 - Users foundation page.
+- Servers foundation page.
 - Shared API client.
 
-It does not yet provide auth, RBAC, CRUD, or agent chat.
+It does not yet provide full session persistence, CRUD, or agent chat.
 
 ## Install
 
