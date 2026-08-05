@@ -184,6 +184,43 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run build`.
 - النتيجة: lint passed وbuild passed.
 
+## المرحلة التاسعة: Monitoring Profiles Management Foundation
+
+الحالة: مكتملة.
+
+العمل المطلوب:
+
+- إضافة أساس API لإدارة ملفات المراقبة.
+- إضافة endpoints لقائمة ملفات المراقبة وملخصها وتفاصيل ملف واحد.
+- حماية endpoints بصلاحية `monitoring.read`.
+- إضافة صفحة ملفات المراقبة في لوحة الإدارة.
+- ربط صفحة ملفات المراقبة بعميل API.
+- إضافة عتبات وملاحظات تحليلية ضمن fixture مفصل.
+- إضافة اختبارات.
+- توثيق المرحلة.
+
+ما تم إنجازه:
+
+- إنشاء `apps/api/src/control_plane_api/schemas/monitoring_profiles.py`.
+- إنشاء `apps/api/src/control_plane_api/modules/monitoring_profiles/service.py`.
+- إنشاء `apps/api/src/control_plane_api/api/routes/monitoring_profiles.py`.
+- إنشاء `apps/api/tests/test_monitoring_profiles.py`.
+- إنشاء `apps/admin-panel/src/app/monitoring-profiles/page.tsx`.
+- إنشاء `apps/admin-panel/src/features/monitoring-profiles/components/monitoring-profiles-view.tsx`.
+- إنشاء `apps/admin-panel/src/lib/monitoring-profiles-client.ts`.
+- إنشاء `docs/phase-9/phase-9-plan.md`.
+- إنشاء `docs/phase-9/monitoring-profiles-foundation.md`.
+- إنشاء `docs/phase-9/completion-report.md`.
+
+التحقق:
+
+- تم تنفيذ `uv run pytest`.
+- النتيجة: `24 passed`.
+- تم تنفيذ `uv run python -m compileall src scripts`.
+- تم تنفيذ `npm run lint`.
+- تم تنفيذ `npm run build`.
+- النتيجة: lint passed وbuild passed.
+
 ## المرحلة السابعة: Users & Roles Management Foundation
 
 الحالة: مكتملة.

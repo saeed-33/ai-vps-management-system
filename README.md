@@ -4,7 +4,7 @@
 
 ## الحالة الحالية
 
-المشروع أنهى المرحلة الثامنة: Servers Management Foundation.
+المشروع أنهى المرحلة التاسعة: Monitoring Profiles Management Foundation.
 
 ## القرارات الأساسية
 
@@ -49,6 +49,7 @@ tests/
 - `docs/phase-6/`: وثائق أساس المصادقة والصلاحيات.
 - `docs/phase-7/`: وثائق أساس إدارة المستخدمين والأدوار.
 - `docs/phase-8/`: وثائق أساس إدارة السيرفرات.
+- `docs/phase-9/`: وثائق أساس إدارة ملفات المراقبة.
 - `docs/architecture-decisions/`: قرارات معمارية موثقة للبنية.
 - `docs/stage-log.md`: سجل المراحل وما تم إنجازه.
 
