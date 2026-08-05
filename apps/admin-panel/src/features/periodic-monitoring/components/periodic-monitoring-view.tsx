@@ -22,6 +22,7 @@ export function PeriodicMonitoringView() {
   const token = typeof window === "undefined" ? null : getStoredAccessToken();
   const [intervalSeconds, setIntervalSeconds] = useState(300);
   const [selectedCycleId, setSelectedCycleId] = useState<string | null>(null);
+  const [selectedAnalysisReportId, setSelectedAnalysisReportId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("run");
 
   const cyclesQuery = useQuery({
@@ -72,6 +73,8 @@ export function PeriodicMonitoringView() {
   const selectedCycle = cycles.find((cycle) => cycle.cycle_id === selectedCycleId) ?? cycles[0] ?? null;
   const allReports = cycles.flatMap((cycle) => cycle.reports);
   const analysisReports = analysisReportsQuery.data?.analysis_reports ?? [];
+  const selectedAnalysisReport =
+    analysisReports.find((report) => report.analysis_report_id === selectedAnalysisReportId) ?? analysisReports[0] ?? null;
   const failedReports = allReports.filter((report) => report.status !== "completed").length;
   const totalMetrics = allReports.reduce((sum, report) => sum + report.metrics.length, 0);
 
@@ -245,24 +248,11 @@ export function PeriodicMonitoringView() {
             id: "analysis-reports",
             label: "تقارير التحليل",
             content: (
-              <section className="card wide-card">
-                <div className="toolbar">
-                  <div>
-                    <h2 className="section-title">تقارير التحليل</h2>
-                    <p className="metric-note">تقارير مستقلة ناتجة عن تحليل تقارير المراقبة الدورية.</p>
-                  </div>
-                  <span className="badge neutral">{analysisReports.length} reports</span>
-                </div>
-                {analysisReports.length === 0 ? (
-                  <p className="notice">لا توجد تقارير تحليل بعد. شغل دورة مراقبة أولا.</p>
-                ) : (
-                  <div className="analysis-report-grid">
-                    {analysisReports.map((report) => (
-                      <AnalysisReportCard key={report.analysis_report_id} report={report} />
-                    ))}
-                  </div>
-                )}
-              </section>
+              <AnalysisReportsWorkspace
+                reports={analysisReports}
+                selectedReport={selectedAnalysisReport}
+                onSelect={setSelectedAnalysisReportId}
+              />
             ),
           },
         ]}
@@ -400,39 +390,174 @@ function MetricSampleCard({ metric }: { metric: MonitoringMetricSample }) {
   );
 }
 
-function AnalysisReportCard({ report }: { report: PeriodicMonitoringAnalysisReport }) {
+function AnalysisReportsWorkspace({
+  reports,
+  selectedReport,
+  onSelect,
+}: {
+  reports: PeriodicMonitoringAnalysisReport[];
+  selectedReport: PeriodicMonitoringAnalysisReport | null;
+  onSelect: (reportId: string) => void;
+}) {
+  if (reports.length === 0) {
+    return (
+      <section className="card wide-card">
+        <h2 className="section-title">تقارير التحليل</h2>
+        <p className="notice">لا توجد تقارير تحليل بعد. شغل دورة مراقبة أولا.</p>
+      </section>
+    );
+  }
+
   return (
-    <article className="analysis-report-card">
-      <div className="toolbar">
-        <div>
-          <strong>{report.title}</strong>
-          <p className="metric-note">{formatDate(report.generated_at)}</p>
+    <section className="analysis-workspace">
+      <aside className="card analysis-list-panel">
+        <div className="toolbar">
+          <div>
+            <h2 className="section-title">تقارير التحليل</h2>
+            <p className="metric-note">اختر تقريرا لعرض التحليل الكامل.</p>
+          </div>
+          <span className="badge neutral">{reports.length}</span>
         </div>
-        <span className={`badge ${analysisBadge(report.analysis.severity)}`}>{report.analysis.severity}</span>
-      </div>
-      <p>{report.analysis.summary}</p>
-      {report.analysis.llm_enrichment ? (
-        <div className="llm-enrichment">
-          <span className={`badge ${report.analysis.llm_enrichment.status === "completed" ? "success" : "neutral"}`}>
-            LLM {report.analysis.llm_enrichment.status}
-          </span>
-          {report.analysis.llm_enrichment.summary ? <p>{report.analysis.llm_enrichment.summary}</p> : null}
-          {report.analysis.llm_enrichment.error ? <small dir="ltr">{report.analysis.llm_enrichment.error}</small> : null}
-        </div>
-      ) : null}
-      <div className="server-report-meta">
-        <span>{report.metrics_count} metrics</span>
-        <span>{report.monitoring_profiles.join(", ") || "no profiles"}</span>
-        <span>{report.analysis.status}</span>
-      </div>
-      {report.analysis.next_actions.length > 0 ? (
-        <ul className="next-action-list">
-          {report.analysis.next_actions.map((action) => (
-            <li key={action}>{action}</li>
+        <ul className="analysis-report-list">
+          {reports.map((report) => (
+            <li key={report.analysis_report_id}>
+              <button
+                className={`analysis-report-button ${selectedReport?.analysis_report_id === report.analysis_report_id ? "selected" : ""}`}
+                onClick={() => onSelect(report.analysis_report_id)}
+                type="button"
+              >
+                <span className={`severity-marker ${analysisBadge(report.analysis.severity)}`} aria-hidden="true" />
+                <strong>{report.server_name}</strong>
+                <span>{formatDate(report.generated_at)}</span>
+                <small>
+                  {report.analysis.status} / {report.metrics_count} metrics
+                </small>
+              </button>
+            </li>
           ))}
         </ul>
+      </aside>
+
+      <section className="card analysis-detail-panel">
+        {selectedReport ? <AnalysisReportDetail report={selectedReport} /> : <p className="notice">اختر تقرير تحليل من القائمة.</p>}
+      </section>
+    </section>
+  );
+}
+
+function AnalysisReportDetail({ report }: { report: PeriodicMonitoringAnalysisReport }) {
+  return (
+    <article className="analysis-detail">
+      <header className="analysis-detail-header">
+        <div>
+          <p className="card-title">تقرير تحليل دوري</p>
+          <h2>{report.server_name}</h2>
+          <p dir="ltr">{report.server_id}</p>
+        </div>
+        <span className={`badge ${analysisBadge(report.analysis.severity)}`}>{report.analysis.severity}</span>
+      </header>
+
+      <section className="analysis-kpi-row" aria-label="Analysis metadata">
+        <div>
+          <span>الحالة</span>
+          <strong>{report.analysis.status}</strong>
+        </div>
+        <div>
+          <span>المقاييس</span>
+          <strong>{report.metrics_count}</strong>
+        </div>
+        <div>
+          <span>وقت التحليل</span>
+          <strong>{formatDate(report.generated_at)}</strong>
+        </div>
+      </section>
+
+      <section className="analysis-block primary">
+        <h3>الخلاصة</h3>
+        <p>{report.analysis.summary}</p>
+      </section>
+
+      <section className="analysis-block">
+        <h3>ملفات المراقبة</h3>
+        <div className="analysis-tags">
+          {report.monitoring_profiles.length > 0 ? (
+            report.monitoring_profiles.map((profile) => (
+              <span className="badge neutral" key={profile}>
+                {profile}
+              </span>
+            ))
+          ) : (
+            <span className="badge neutral">لا يوجد</span>
+          )}
+        </div>
+      </section>
+
+      {report.analysis.llm_enrichment ? (
+        <section className="analysis-block">
+          <div className="toolbar">
+            <h3>تحليل LLM</h3>
+            <span className={`badge ${report.analysis.llm_enrichment.status === "completed" ? "success" : "neutral"}`}>
+              {report.analysis.llm_enrichment.provider} / {report.analysis.llm_enrichment.status}
+            </span>
+          </div>
+          {report.analysis.llm_enrichment.summary ? <p>{report.analysis.llm_enrichment.summary}</p> : null}
+          {report.analysis.llm_enrichment.root_cause_hypotheses.length > 0 ? (
+            <AnalysisBullets title="احتمالات السبب" items={report.analysis.llm_enrichment.root_cause_hypotheses} />
+          ) : null}
+          {report.analysis.llm_enrichment.recommended_questions.length > 0 ? (
+            <AnalysisBullets title="أسئلة مقترحة" items={report.analysis.llm_enrichment.recommended_questions} />
+          ) : null}
+          {report.analysis.llm_enrichment.limitations.length > 0 ? (
+            <AnalysisBullets title="حدود التحليل" items={report.analysis.llm_enrichment.limitations} />
+          ) : null}
+          {report.analysis.llm_enrichment.error ? (
+            <p className="notice danger" dir="ltr">
+              {report.analysis.llm_enrichment.error}
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
+      <section className="analysis-block">
+        <h3>النتائج</h3>
+        {report.analysis.findings.length > 0 ? (
+          <ul className="finding-list detailed">
+            {report.analysis.findings.map((finding) => (
+              <li key={finding.code}>
+                <span className={`badge ${analysisBadge(finding.severity)}`}>{finding.severity}</span>
+                <div>
+                  <strong>{finding.title}</strong>
+                  <p>{finding.detail}</p>
+                  {finding.interpretation_note ? <small>{finding.interpretation_note}</small> : null}
+                  {finding.profile_id ? <small dir="ltr">{finding.profile_id}</small> : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="metric-note">لا توجد نتائج تحذيرية أو حرجة في هذا التقرير.</p>
+        )}
+      </section>
+
+      {report.analysis.next_actions.length > 0 ? (
+        <section className="analysis-block">
+          <AnalysisBullets title="الخطوات التالية" items={report.analysis.next_actions} />
+        </section>
       ) : null}
     </article>
+  );
+}
+
+function AnalysisBullets({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="analysis-subsection">
+      <h4>{title}</h4>
+      <ul className="next-action-list">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
