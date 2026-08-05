@@ -226,6 +226,14 @@ FOUNDATION_SERVER_SSH_PASSWORD=
 
 ثم أعد تشغيل الـ API. إذا بقي `FOUNDATION_SERVER_SSH_ENABLED=false` يستخدم الوكيل fixture collector.
 
+يمكن أيضا حفظ إعدادات SSH مؤقتا من صفحة:
+
+```text
+http://127.0.0.1:3000/servers
+```
+
+هذا الحفظ داخل ذاكرة API فقط ويضيع عند إعادة تشغيل الـ API.
+
 اختبار Backend API:
 
 ```powershell

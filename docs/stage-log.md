@@ -224,6 +224,43 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run build`.
 - النتيجة: build passed.
 
+## المرحلة السادسة عشرة: Server SSH Access Foundation
+
+الحالة: مكتملة كأساس مؤقت.
+
+العمل المطلوب:
+
+- إضافة إعدادات SSH إلى إدارة السيرفرات.
+- إضافة endpoint لتحديث SSH access.
+- إخفاء كلمة المرور من الاستجابات.
+- ربط periodic monitoring بإعدادات SSH المحفوظة.
+- إضافة نموذج SSH في لوحة الإدارة.
+- إضافة اختبارات.
+- توثيق المرحلة.
+
+ما تم إنجازه:
+
+- تحديث `apps/api/src/control_plane_api/schemas/servers.py`.
+- تحديث `apps/api/src/control_plane_api/modules/servers/service.py`.
+- تحديث `apps/api/src/control_plane_api/api/routes/servers.py`.
+- تحديث `apps/api/src/control_plane_api/modules/periodic_monitoring/service.py`.
+- تحديث `apps/api/tests/test_servers.py`.
+- تحديث `apps/admin-panel/src/features/servers/components/servers-view.tsx`.
+- تحديث `apps/admin-panel/src/lib/servers-client.ts`.
+- إنشاء `docs/phase-16/phase-16-plan.md`.
+- إنشاء `docs/phase-16/server-ssh-access-foundation.md`.
+- إنشاء `docs/phase-16/completion-report.md`.
+
+التحقق:
+
+- تم تنفيذ `uv run --extra dev pytest` داخل `apps/agent`.
+- النتيجة: `7 passed`.
+- تم تنفيذ `uv run pytest` داخل `apps/api`.
+- النتيجة: `42 passed`.
+- تم تنفيذ `npm run lint`.
+- تم تنفيذ `npm run build`.
+- النتيجة: build passed.
+
 ## المرحلة الخامسة عشرة: SSH Monitoring Foundation
 
 الحالة: مكتملة كأساس داخلي للوكيل.

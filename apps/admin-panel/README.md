@@ -15,6 +15,7 @@ This is the phase 13 foundation. It provides:
 - Bootstrap login page.
 - Users foundation page.
 - Servers foundation page.
+- Temporary server SSH access form.
 - Monitoring profiles foundation page.
 - Specialist agents foundation page.
 - Allowed tools foundation page.

@@ -1,13 +1,20 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { RefreshCw, Server } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { KeyRound, RefreshCw, Server } from "lucide-react";
 import Link from "next/link";
+import { FormEvent, useState } from "react";
 import { getStoredAccessToken } from "@/lib/auth-client";
-import { getServers, getServersSummary } from "@/lib/servers-client";
+import { getServer, getServers, getServersSummary, updateServerSshAccess } from "@/lib/servers-client";
 
 export function ServersView() {
   const token = typeof window === "undefined" ? null : getStoredAccessToken();
+  const [sshEnabled, setSshEnabled] = useState(false);
+  const [sshHost, setSshHost] = useState("");
+  const [sshPort, setSshPort] = useState(22);
+  const [sshUsername, setSshUsername] = useState("");
+  const [sshPrivateKeyPath, setSshPrivateKeyPath] = useState("");
+  const [sshPassword, setSshPassword] = useState("");
 
   const serversQuery = useQuery({
     queryKey: ["servers", "list"],
@@ -20,6 +27,33 @@ export function ServersView() {
     queryFn: () => getServersSummary(token ?? ""),
     enabled: Boolean(token),
   });
+
+  const foundationServerQuery = useQuery({
+    queryKey: ["servers", "detail", "srv-foundation-001"],
+    queryFn: () => getServer(token ?? "", "srv-foundation-001"),
+    enabled: Boolean(token),
+  });
+
+  const sshMutation = useMutation({
+    mutationFn: () =>
+      updateServerSshAccess(token ?? "", "srv-foundation-001", {
+        enabled: sshEnabled,
+        host: sshHost || null,
+        port: sshPort,
+        username: sshUsername || null,
+        private_key_path: sshPrivateKeyPath || null,
+        password: sshPassword || null,
+      }),
+    onSuccess: () => {
+      setSshPassword("");
+      void foundationServerQuery.refetch();
+    },
+  });
+
+  function handleSshSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    sshMutation.mutate();
+  }
 
   if (!token) {
     return (
@@ -105,11 +139,65 @@ export function ServersView() {
 
       <section className="card side-card">
         <div className="toolbar">
-          <h2 className="section-title">الخطوة القادمة</h2>
-          <Server aria-hidden="true" />
+          <h2 className="section-title">إعداد SSH مؤقت</h2>
+          <KeyRound aria-hidden="true" />
         </div>
+        <p className="metric-note">الحفظ الحالي داخل ذاكرة API فقط ولا يعرض كلمة المرور بعد حفظها.</p>
+        <form className="form-stack" onSubmit={handleSshSubmit}>
+          <label className="field">
+            <span>تفعيل SSH</span>
+            <input
+              type="checkbox"
+              checked={sshEnabled}
+              onChange={(event) => setSshEnabled(event.target.checked)}
+            />
+          </label>
+          <label className="field">
+            <span>Host</span>
+            <input dir="ltr" value={sshHost} onChange={(event) => setSshHost(event.target.value)} />
+          </label>
+          <label className="field">
+            <span>Port</span>
+            <input
+              dir="ltr"
+              min={1}
+              max={65535}
+              type="number"
+              value={sshPort}
+              onChange={(event) => setSshPort(Number(event.target.value))}
+            />
+          </label>
+          <label className="field">
+            <span>Username</span>
+            <input dir="ltr" value={sshUsername} onChange={(event) => setSshUsername(event.target.value)} />
+          </label>
+          <label className="field">
+            <span>Private key path</span>
+            <input
+              dir="ltr"
+              value={sshPrivateKeyPath}
+              onChange={(event) => setSshPrivateKeyPath(event.target.value)}
+            />
+          </label>
+          <label className="field">
+            <span>Password</span>
+            <input
+              dir="ltr"
+              type="password"
+              value={sshPassword}
+              onChange={(event) => setSshPassword(event.target.value)}
+            />
+          </label>
+          <button className="button primary" type="submit" disabled={sshMutation.isPending}>
+            <Server aria-hidden="true" />
+            {sshMutation.isPending ? "جاري الحفظ" : "حفظ SSH"}
+          </button>
+        </form>
+        {sshMutation.isError ? <p className="notice danger">تعذر حفظ إعدادات SSH.</p> : null}
+        {sshMutation.isSuccess ? <p className="notice success">تم حفظ إعدادات SSH مؤقتا.</p> : null}
         <p className="metric-note">
-          بعد هذه المرحلة سيتم بناء create/update وربط PostgreSQL ثم credentials handling بشكل آمن.
+          الحالة الحالية: {foundationServerQuery.data?.ssh_access.enabled ? "enabled" : "disabled"} /{" "}
+          {foundationServerQuery.data?.ssh_access.auth_method ?? "none"}
         </p>
       </section>
     </div>

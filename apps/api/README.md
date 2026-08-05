@@ -82,6 +82,7 @@ GET /api/v1/users/roles
 GET /api/v1/servers
 GET /api/v1/servers/summary
 GET /api/v1/servers/{server_id}
+PUT /api/v1/servers/{server_id}/ssh-access
 GET /api/v1/monitoring-profiles
 GET /api/v1/monitoring-profiles/summary
 GET /api/v1/monitoring-profiles/{profile_id}

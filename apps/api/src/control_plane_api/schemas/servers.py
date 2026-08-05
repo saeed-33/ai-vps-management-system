@@ -25,6 +25,26 @@ class ServersSummaryResponse(BaseModel):
     by_environment: dict[str, int]
 
 
+class ServerSshAccessPublic(BaseModel):
+    enabled: bool
+    host: str | None = None
+    port: int = 22
+    username: str | None = None
+    auth_method: str = "none"
+    has_password: bool = False
+    private_key_path: str | None = None
+
+
+class ServerSshAccessUpdate(BaseModel):
+    enabled: bool
+    host: str | None = None
+    port: int = 22
+    username: str | None = None
+    private_key_path: str | None = None
+    password: str | None = None
+
+
 class ServerDetail(ServerSummary):
     metadata: dict[str, str]
     assigned_monitoring_profiles: list[str]
+    ssh_access: ServerSshAccessPublic

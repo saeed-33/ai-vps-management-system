@@ -8,7 +8,7 @@ from ai_vps_agent.periodic_monitoring.orchestrator import PeriodicMonitoringAgen
 from ai_vps_agent.server_access.models import SshServerAccess
 
 from control_plane_api.core.config import get_settings
-from control_plane_api.modules.servers.service import FOUNDATION_SERVERS
+from control_plane_api.modules.servers.service import FOUNDATION_SERVERS, get_server_ssh_access_config
 from control_plane_api.schemas.periodic_monitoring import (
     PeriodicMonitoringCycleReport,
     PeriodicMonitoringCyclesListResponse,
@@ -126,7 +126,7 @@ def _get_agent_servers() -> list[AgentServer]:
             hostname=server.hostname,
             status=server.status,
             monitoring_profiles=server.assigned_monitoring_profiles or DEFAULT_PROFILE_IDS,
-            ssh=_foundation_ssh_access(server.id, settings),
+            ssh=_server_ssh_access(server.id, settings),
         )
         for server in FOUNDATION_SERVERS
     ]
@@ -134,6 +134,21 @@ def _get_agent_servers() -> list[AgentServer]:
 
 def _to_api_cycle(agent_cycle: AgentPeriodicMonitoringCycleReport) -> PeriodicMonitoringCycleReport:
     return PeriodicMonitoringCycleReport.model_validate(agent_cycle.model_dump())
+
+
+def _server_ssh_access(server_id: str, settings: object) -> SshServerAccess | None:
+    configured_access = get_server_ssh_access_config(server_id)
+    if configured_access is not None and configured_access.enabled:
+        if not configured_access.host or not configured_access.username:
+            return None
+        return SshServerAccess(
+            host=configured_access.host,
+            port=configured_access.port,
+            username=configured_access.username,
+            private_key_path=configured_access.private_key_path,
+            password=configured_access.password,
+        )
+    return _foundation_ssh_access(server_id, settings)
 
 
 def _foundation_ssh_access(server_id: str, settings: object) -> SshServerAccess | None:
