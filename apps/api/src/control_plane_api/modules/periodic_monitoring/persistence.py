@@ -15,6 +15,13 @@ def stable_uuid(value: str) -> UUID:
     return uuid5(NAMESPACE_URL, f"ai-vps-management-system:{value}")
 
 
+def database_uuid(value: str) -> UUID:
+    try:
+        return UUID(value)
+    except ValueError:
+        return stable_uuid(value)
+
+
 async def persist_periodic_monitoring_cycle(
     cycle: PeriodicMonitoringCycleReport,
     settings: Settings,
@@ -50,7 +57,7 @@ async def persist_periodic_monitoring_cycle(
             )
 
             for report in cycle.reports:
-                server_uuid = stable_uuid(report.server_id)
+                server_uuid = database_uuid(report.server_id)
                 await session.execute(
                     text(
                         """

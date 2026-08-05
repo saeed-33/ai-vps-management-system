@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from control_plane_api.core.config import Settings
 from control_plane_api.core.security import hash_password
 from control_plane_api.main import create_app
-from control_plane_api.modules.periodic_monitoring.persistence import stable_uuid
+from control_plane_api.modules.periodic_monitoring.persistence import database_uuid, stable_uuid
 from control_plane_api.modules.periodic_monitoring.service import RECENT_CYCLES, stop_periodic_monitoring_scheduler
 
 
@@ -46,6 +46,12 @@ def test_stable_uuid_maps_text_ids_consistently() -> None:
 
     assert first == second
     assert first.version == 5
+
+
+def test_database_uuid_preserves_existing_uuid_values() -> None:
+    value = "95502c32-9d2e-589d-b58e-334e97eeb99b"
+
+    assert str(database_uuid(value)) == value
 
 
 def test_latest_cycle_not_found_before_run() -> None:

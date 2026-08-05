@@ -640,6 +640,28 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run lint`.
 - تم تنفيذ `npm run build`.
 - النتيجة: lint passed وbuild passed.
+## Phase 22: Periodic Monitoring Server UUID Persistence Fix
+
+Status: completed.
+
+Required work:
+
+- Fix duplicate server insertion when persisting monitoring reports for database-backed servers.
+- Preserve real UUID server ids.
+- Keep stable UUID mapping for text fixture ids.
+
+Completed work:
+
+- Updated `apps/api/src/control_plane_api/modules/periodic_monitoring/persistence.py`.
+- Updated `apps/api/tests/test_periodic_monitoring.py`.
+- Created `docs/phase-22`.
+
+Verification:
+
+- `uv run pytest` in `apps/api`: `48 passed`.
+- `uv run python -m compileall src scripts` in `apps/api`: passed.
+- `GET /health/ready`: ready.
+
 ## Phase 21: Server Management UX Improvement
 
 Status: completed.
