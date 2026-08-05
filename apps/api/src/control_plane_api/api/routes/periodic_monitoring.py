@@ -43,7 +43,7 @@ async def start_periodic_monitoring_cycle(
     principal: Principal = Depends(get_current_principal),
 ) -> PeriodicMonitoringCycleReport:
     require_monitoring_write(principal)
-    return run_periodic_monitoring_cycle()
+    return await run_periodic_monitoring_cycle()
 
 
 @router.get("/cycles", response_model=PeriodicMonitoringCyclesListResponse)

@@ -224,6 +224,46 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run build`.
 - النتيجة: build passed.
 
+## المرحلة السابعة عشرة: Real Server Monitoring & Report Persistence Foundation
+
+الحالة: مكتملة كأساس أولي.
+
+العمل المطلوب:
+
+- استخدام إعدادات SSH للسيرفرات الحقيقية عند تشغيل دورة المراقبة.
+- حفظ دورات المراقبة والتقارير والـ metrics في PostgreSQL.
+- إبقاء fallback إلى الذاكرة عند غياب قاعدة البيانات.
+- توثيق طريقة التجربة.
+- إضافة اختبار للـ UUID mapping.
+
+ما تم إنجازه:
+
+- إنشاء `apps/api/src/control_plane_api/modules/periodic_monitoring/persistence.py`.
+- تحديث `apps/api/src/control_plane_api/modules/periodic_monitoring/service.py`.
+- تحديث `apps/api/src/control_plane_api/api/routes/periodic_monitoring.py`.
+- تحديث `apps/api/tests/test_periodic_monitoring.py`.
+- إنشاء `docs/phase-17/phase-17-plan.md`.
+- إنشاء `docs/phase-17/database-report-persistence.md`.
+- إنشاء `docs/phase-17/real-server-ssh-trial.md`.
+- إنشاء `docs/phase-17/completion-report.md`.
+
+التحقق:
+
+- تم تنفيذ `uv run pytest` داخل `apps/api`.
+- النتيجة: `43 passed`.
+- تم تنفيذ `uv run --extra dev pytest` داخل `apps/agent`.
+- النتيجة: `7 passed`.
+- تم تنفيذ `uv run python -m compileall src scripts`.
+- تم تنفيذ `npm run lint`.
+- تم تنفيذ `npm run build`.
+- النتيجة: build passed.
+
+ملاحظة البيئة المحلية:
+
+- تم التحقق من توفر Docker Desktop.
+- محاولة تشغيل `docker compose -f infra/compose/docker-compose.dev.yml up -d` لم تكتمل ضمن المهلة.
+- لم يتم تطبيق migration فعليا في هذه الجلسة.
+
 ## المرحلة السادسة عشرة: Server SSH Access Foundation
 
 الحالة: مكتملة كأساس مؤقت.

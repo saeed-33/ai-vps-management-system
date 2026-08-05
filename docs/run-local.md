@@ -234,6 +234,23 @@ http://127.0.0.1:3000/servers
 
 هذا الحفظ داخل ذاكرة API فقط ويضيع عند إعادة تشغيل الـ API.
 
+## حفظ تقارير المراقبة في PostgreSQL
+
+لتفعيل حفظ التقارير:
+
+1. شغل PostgreSQL.
+2. طبق migration:
+
+```text
+packages/database/migrations/0001_initial_schema.sql
+```
+
+3. اضبط `DATABASE_URL` داخل `apps/api/.env`.
+4. أعد تشغيل API.
+5. شغل دورة مراقبة من `/periodic-monitoring`.
+
+إذا لم تكن قاعدة البيانات جاهزة، ستستمر التقارير بالظهور في الواجهة من ذاكرة API فقط.
+
 اختبار Backend API:
 
 ```powershell

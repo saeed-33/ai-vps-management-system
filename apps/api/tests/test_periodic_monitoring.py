@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 from control_plane_api.core.config import Settings
 from control_plane_api.core.security import hash_password
 from control_plane_api.main import create_app
+from control_plane_api.modules.periodic_monitoring.persistence import stable_uuid
 from control_plane_api.modules.periodic_monitoring.service import RECENT_CYCLES, stop_periodic_monitoring_scheduler
 
 
@@ -37,6 +38,14 @@ def test_periodic_monitoring_requires_auth() -> None:
     response = client.post("/api/v1/periodic-monitoring/cycles")
 
     assert response.status_code == 401
+
+
+def test_stable_uuid_maps_text_ids_consistently() -> None:
+    first = stable_uuid("srv-foundation-001")
+    second = stable_uuid("srv-foundation-001")
+
+    assert first == second
+    assert first.version == 5
 
 
 def test_latest_cycle_not_found_before_run() -> None:

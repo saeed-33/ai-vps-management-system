@@ -9,6 +9,7 @@ from ai_vps_agent.server_access.models import SshServerAccess
 
 from control_plane_api.core.config import get_settings
 from control_plane_api.modules.servers.service import FOUNDATION_SERVERS, get_server_ssh_access_config
+from control_plane_api.modules.periodic_monitoring.persistence import persist_periodic_monitoring_cycle
 from control_plane_api.schemas.periodic_monitoring import (
     PeriodicMonitoringCycleReport,
     PeriodicMonitoringCyclesListResponse,
@@ -28,10 +29,16 @@ SCHEDULER_RUNS_COUNT = 0
 SCHEDULER_LAST_ERROR: str | None = None
 
 
-def run_periodic_monitoring_cycle(*, trigger: str = "manual") -> PeriodicMonitoringCycleReport:
+async def run_periodic_monitoring_cycle(*, trigger: str = "manual") -> PeriodicMonitoringCycleReport:
+    global SCHEDULER_LAST_ERROR
+
     cycle = _to_api_cycle(MONITORING_AGENT.run_cycle(servers=_get_agent_servers(), trigger=trigger))
     RECENT_CYCLES.insert(0, cycle)
     del RECENT_CYCLES[10:]
+    try:
+        await persist_periodic_monitoring_cycle(cycle, get_settings())
+    except Exception as exc:  # pragma: no cover - database availability depends on local environment.
+        SCHEDULER_LAST_ERROR = f"database persistence skipped: {exc.__class__.__name__}: {exc}"
     return cycle
 
 
@@ -51,7 +58,7 @@ async def start_periodic_monitoring_scheduler(interval_seconds: int) -> Periodic
     SCHEDULER_STARTED_AT = datetime.now(UTC)
     SCHEDULER_LAST_ERROR = None
     SCHEDULER_RUNS_COUNT = 0
-    first_cycle = run_periodic_monitoring_cycle(trigger="scheduler")
+    first_cycle = await run_periodic_monitoring_cycle(trigger="scheduler")
     SCHEDULER_LAST_RUN_AT = first_cycle.completed_at
     SCHEDULER_RUNS_COUNT = 1
     SCHEDULER_NEXT_RUN_AT = datetime.now(UTC) + timedelta(seconds=interval_seconds)
@@ -96,7 +103,7 @@ async def _scheduler_loop(interval_seconds: int) -> None:
         SCHEDULER_NEXT_RUN_AT = datetime.now(UTC) + timedelta(seconds=interval_seconds)
         await asyncio.sleep(interval_seconds)
         try:
-            cycle = run_periodic_monitoring_cycle(trigger="scheduler")
+            cycle = await run_periodic_monitoring_cycle(trigger="scheduler")
             SCHEDULER_LAST_RUN_AT = cycle.completed_at
             SCHEDULER_RUNS_COUNT += 1
             SCHEDULER_LAST_ERROR = None

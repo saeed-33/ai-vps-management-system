@@ -4,7 +4,7 @@
 
 ## الحالة الحالية
 
-المشروع أنهى المرحلة السادسة عشرة: Server SSH Access Foundation.
+المشروع أنهى المرحلة السابعة عشرة: Real Server Monitoring & Report Persistence Foundation.
 
 ## القرارات الأساسية
 
@@ -58,6 +58,7 @@ tests/
 - `docs/phase-14/`: وثائق وكيل المراقبة الدورية الفعلي.
 - `docs/phase-15/`: وثائق أساس SSH للمراقبة الدورية.
 - `docs/phase-16/`: وثائق ربط إعدادات SSH بإدارة السيرفرات.
+- `docs/phase-17/`: وثائق تجربة السيرفرات الحقيقية وحفظ التقارير في PostgreSQL.
 - `docs/architecture-decisions/`: قرارات معمارية موثقة للبنية.
 - `docs/stage-log.md`: سجل المراحل وما تم إنجازه.
 
