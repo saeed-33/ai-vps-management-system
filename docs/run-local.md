@@ -181,6 +181,7 @@ http://127.0.0.1:3000/users
 http://127.0.0.1:3000/servers
 http://127.0.0.1:3000/monitoring-profiles
 http://127.0.0.1:3000/specialist-agents
+http://127.0.0.1:3000/allowed-tools
 ```
 
 ## اختبار المشروع

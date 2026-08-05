@@ -14,6 +14,7 @@ PERMISSIONS = [
     PermissionDefinition(code="reports.read", description="View reports"),
     PermissionDefinition(code="audit.read", description="View audit logs"),
     PermissionDefinition(code="solutions.approve", description="Approve allowed solutions"),
+    PermissionDefinition(code="tools.read", description="View allowed tools"),
     PermissionDefinition(code="tools.manage", description="Manage allowed tools"),
     PermissionDefinition(code="documents.manage", description="Manage RAG documents and links"),
     PermissionDefinition(code="chat.use", description="Use agent chat"),
@@ -33,6 +34,7 @@ ADMIN_PERMISSIONS = [
     "reports.read",
     "audit.read",
     "solutions.approve",
+    "tools.read",
     "tools.manage",
     "documents.manage",
     "chat.use",
@@ -44,6 +46,7 @@ OPERATOR_PERMISSIONS = [
     "issues.read",
     "issues.write",
     "reports.read",
+    "tools.read",
     "chat.use",
 ]
 VIEWER_PERMISSIONS = [
@@ -52,6 +55,7 @@ VIEWER_PERMISSIONS = [
     "specialist_agents.read",
     "issues.read",
     "reports.read",
+    "tools.read",
 ]
 AUDITOR_PERMISSIONS = [
     "servers.read",
@@ -60,6 +64,7 @@ AUDITOR_PERMISSIONS = [
     "issues.read",
     "reports.read",
     "audit.read",
+    "tools.read",
 ]
 
 ROLES = [

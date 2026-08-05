@@ -184,6 +184,43 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run build`.
 - النتيجة: lint passed وbuild passed.
 
+## المرحلة الحادية عشرة: Allowed Tools Management Foundation
+
+الحالة: مكتملة.
+
+العمل المطلوب:
+
+- إضافة أساس API لإدارة الأدوات المسموحة.
+- إضافة endpoints لقائمة الأدوات وملخصها وتفاصيل أداة واحدة.
+- إضافة صلاحية قراءة مستقلة `tools.read`.
+- حماية endpoints بصلاحية القراءة.
+- إضافة صفحة الأدوات المسموحة في لوحة الإدارة.
+- ربط صفحة الأدوات المسموحة بعميل API.
+- إضافة اختبارات.
+- توثيق المرحلة.
+
+ما تم إنجازه:
+
+- إنشاء `apps/api/src/control_plane_api/schemas/allowed_tools.py`.
+- إنشاء `apps/api/src/control_plane_api/modules/allowed_tools/service.py`.
+- إنشاء `apps/api/src/control_plane_api/api/routes/allowed_tools.py`.
+- إنشاء `apps/api/tests/test_allowed_tools.py`.
+- إنشاء `apps/admin-panel/src/app/allowed-tools/page.tsx`.
+- إنشاء `apps/admin-panel/src/features/allowed-tools/components/allowed-tools-view.tsx`.
+- إنشاء `apps/admin-panel/src/lib/allowed-tools-client.ts`.
+- إنشاء `docs/phase-11/phase-11-plan.md`.
+- إنشاء `docs/phase-11/allowed-tools-foundation.md`.
+- إنشاء `docs/phase-11/completion-report.md`.
+
+التحقق:
+
+- تم تنفيذ `uv run pytest`.
+- النتيجة: `34 passed`.
+- تم تنفيذ `uv run python -m compileall src scripts`.
+- تم تنفيذ `npm run lint`.
+- تم تنفيذ `npm run build`.
+- النتيجة: lint passed وbuild passed.
+
 ## المرحلة العاشرة: Specialist Agents Management Foundation
 
 الحالة: مكتملة.

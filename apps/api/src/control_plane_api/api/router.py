@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from control_plane_api.api.routes.allowed_tools import router as allowed_tools_router
 from control_plane_api.api.routes.auth import router as auth_router
 from control_plane_api.api.routes.meta import router as meta_router
 from control_plane_api.api.routes.monitoring_profiles import router as monitoring_profiles_router
@@ -14,3 +15,4 @@ api_router.include_router(users_router)
 api_router.include_router(servers_router)
 api_router.include_router(monitoring_profiles_router)
 api_router.include_router(specialist_agents_router)
+api_router.include_router(allowed_tools_router)

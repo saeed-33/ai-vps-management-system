@@ -4,7 +4,7 @@
 
 ## الحالة الحالية
 
-المشروع أنهى المرحلة العاشرة: Specialist Agents Management Foundation.
+المشروع أنهى المرحلة الحادية عشرة: Allowed Tools Management Foundation.
 
 ## القرارات الأساسية
 
@@ -52,6 +52,7 @@ tests/
 - `docs/phase-8/`: وثائق أساس إدارة السيرفرات.
 - `docs/phase-9/`: وثائق أساس إدارة ملفات المراقبة.
 - `docs/phase-10/`: وثائق أساس إدارة الوكلاء المتخصصين.
+- `docs/phase-11/`: وثائق أساس إدارة الأدوات المسموحة.
 - `docs/architecture-decisions/`: قرارات معمارية موثقة للبنية.
 - `docs/stage-log.md`: سجل المراحل وما تم إنجازه.
 
