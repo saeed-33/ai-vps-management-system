@@ -31,7 +31,7 @@ const navigationGroups = [
     title: "الوكيل والمراقبة",
     items: [
       { label: "ملفات المراقبة", href: "/monitoring-profiles", icon: ScrollText },
-      { label: "الوكلاء المتخصصون", href: "#specialist-agents", icon: Bot },
+      { label: "الوكلاء المتخصصون", href: "/specialist-agents", icon: Bot },
       { label: "الأدوات المسموحة", href: "#allowed-tools", icon: Wrench },
       { label: "الحلول المسموحة", href: "#allowed-solutions", icon: ShieldCheck },
     ],

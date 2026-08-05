@@ -7,6 +7,7 @@ PERMISSIONS = [
     PermissionDefinition(code="servers.write", description="Create and update servers"),
     PermissionDefinition(code="monitoring.read", description="View monitoring data"),
     PermissionDefinition(code="monitoring.write", description="Manage monitoring profiles"),
+    PermissionDefinition(code="specialist_agents.read", description="View specialist agents"),
     PermissionDefinition(code="specialist_agents.write", description="Manage specialist agents"),
     PermissionDefinition(code="issues.read", description="View issues"),
     PermissionDefinition(code="issues.write", description="Manage issues"),
@@ -25,6 +26,7 @@ ADMIN_PERMISSIONS = [
     "servers.write",
     "monitoring.read",
     "monitoring.write",
+    "specialist_agents.read",
     "specialist_agents.write",
     "issues.read",
     "issues.write",
@@ -38,6 +40,7 @@ ADMIN_PERMISSIONS = [
 OPERATOR_PERMISSIONS = [
     "servers.read",
     "monitoring.read",
+    "specialist_agents.read",
     "issues.read",
     "issues.write",
     "reports.read",
@@ -46,12 +49,14 @@ OPERATOR_PERMISSIONS = [
 VIEWER_PERMISSIONS = [
     "servers.read",
     "monitoring.read",
+    "specialist_agents.read",
     "issues.read",
     "reports.read",
 ]
 AUDITOR_PERMISSIONS = [
     "servers.read",
     "monitoring.read",
+    "specialist_agents.read",
     "issues.read",
     "reports.read",
     "audit.read",

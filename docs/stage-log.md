@@ -184,6 +184,43 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run build`.
 - النتيجة: lint passed وbuild passed.
 
+## المرحلة العاشرة: Specialist Agents Management Foundation
+
+الحالة: مكتملة.
+
+العمل المطلوب:
+
+- إضافة أساس API لإدارة الوكلاء المتخصصين.
+- إضافة endpoints لقائمة الوكلاء وملخصهم وتفاصيل وكيل واحد.
+- إضافة صلاحية قراءة مستقلة `specialist_agents.read`.
+- حماية endpoints بصلاحية القراءة.
+- إضافة صفحة الوكلاء المتخصصين في لوحة الإدارة.
+- ربط صفحة الوكلاء المتخصصين بعميل API.
+- إضافة اختبارات.
+- توثيق المرحلة.
+
+ما تم إنجازه:
+
+- إنشاء `apps/api/src/control_plane_api/schemas/specialist_agents.py`.
+- إنشاء `apps/api/src/control_plane_api/modules/specialist_agents/service.py`.
+- إنشاء `apps/api/src/control_plane_api/api/routes/specialist_agents.py`.
+- إنشاء `apps/api/tests/test_specialist_agents.py`.
+- إنشاء `apps/admin-panel/src/app/specialist-agents/page.tsx`.
+- إنشاء `apps/admin-panel/src/features/specialist-agents/components/specialist-agents-view.tsx`.
+- إنشاء `apps/admin-panel/src/lib/specialist-agents-client.ts`.
+- إنشاء `docs/phase-10/phase-10-plan.md`.
+- إنشاء `docs/phase-10/specialist-agents-foundation.md`.
+- إنشاء `docs/phase-10/completion-report.md`.
+
+التحقق:
+
+- تم تنفيذ `uv run pytest`.
+- النتيجة: `29 passed`.
+- تم تنفيذ `uv run python -m compileall src scripts`.
+- تم تنفيذ `npm run lint`.
+- تم تنفيذ `npm run build`.
+- النتيجة: lint passed وbuild passed.
+
 ## المرحلة التاسعة: Monitoring Profiles Management Foundation
 
 الحالة: مكتملة.

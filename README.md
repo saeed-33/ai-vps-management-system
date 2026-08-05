@@ -4,7 +4,7 @@
 
 ## الحالة الحالية
 
-المشروع أنهى المرحلة التاسعة: Monitoring Profiles Management Foundation.
+المشروع أنهى المرحلة العاشرة: Specialist Agents Management Foundation.
 
 ## القرارات الأساسية
 
@@ -50,6 +50,7 @@ tests/
 - `docs/phase-7/`: وثائق أساس إدارة المستخدمين والأدوار.
 - `docs/phase-8/`: وثائق أساس إدارة السيرفرات.
 - `docs/phase-9/`: وثائق أساس إدارة ملفات المراقبة.
+- `docs/phase-10/`: وثائق أساس إدارة الوكلاء المتخصصين.
 - `docs/architecture-decisions/`: قرارات معمارية موثقة للبنية.
 - `docs/stage-log.md`: سجل المراحل وما تم إنجازه.
 

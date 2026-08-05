@@ -4,7 +4,7 @@ FastAPI service for the AI VPS Management System control plane.
 
 ## Current Scope
 
-This is the phase 9 foundation. It provides:
+This is the phase 10 foundation. It provides:
 
 - Application factory.
 - Central settings.
@@ -16,6 +16,7 @@ This is the phase 9 foundation. It provides:
 - Users and roles foundation endpoints.
 - Servers foundation endpoints.
 - Monitoring profiles foundation endpoints.
+- Specialist agents foundation endpoints.
 - Smoke tests.
 
 It does not yet provide database-backed CRUD, MCP, or agent integration.
@@ -68,4 +69,7 @@ GET /api/v1/servers/{server_id}
 GET /api/v1/monitoring-profiles
 GET /api/v1/monitoring-profiles/summary
 GET /api/v1/monitoring-profiles/{profile_id}
+GET /api/v1/specialist-agents
+GET /api/v1/specialist-agents/summary
+GET /api/v1/specialist-agents/{agent_id}
 ```
