@@ -88,7 +88,7 @@ def test_periodic_monitoring_lists_created_reports() -> None:
     assert response.status_code == 200
     body = response.json()
     assert len(body["reports"]) >= 1
-    assert body["reports"][0]["collection_summary"] == "Baseline metrics collected successfully from foundation fixture."
+    assert body["reports"][0]["collection_summary"] == "Baseline metrics collected successfully by periodic monitoring agent."
 
 
 def test_periodic_monitoring_scheduler_start_status_and_stop() -> None:

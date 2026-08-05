@@ -184,6 +184,46 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run build`.
 - النتيجة: lint passed وbuild passed.
 
+## المرحلة الرابعة عشرة: Periodic Monitoring Agent Runtime
+
+الحالة: مكتملة.
+
+العمل المطلوب:
+
+- إنشاء حزمة وكيل فعلية داخل `apps/agent`.
+- نقل مسؤولية جمع تقارير المراقبة الدورية إلى الوكيل.
+- إنشاء `PeriodicMonitoringAgent`.
+- إنشاء `ServerSubAgent`.
+- إنشاء collector read-only foundation.
+- ربط Backend API بحزمة الوكيل.
+- إضافة اختبار مباشر للوكيل.
+- توثيق التصحيح.
+
+ما تم إنجازه:
+
+- إنشاء `apps/agent/pyproject.toml`.
+- إنشاء `apps/agent/src/ai_vps_agent/periodic_monitoring/models.py`.
+- إنشاء `apps/agent/src/ai_vps_agent/periodic_monitoring/collectors.py`.
+- إنشاء `apps/agent/src/ai_vps_agent/periodic_monitoring/server_sub_agent.py`.
+- إنشاء `apps/agent/src/ai_vps_agent/periodic_monitoring/orchestrator.py`.
+- إنشاء `apps/agent/tests/test_periodic_monitoring_agent.py`.
+- تحديث `apps/api/pyproject.toml`.
+- تحديث `apps/api/src/control_plane_api/modules/periodic_monitoring/service.py`.
+- إنشاء `docs/phase-14/phase-14-plan.md`.
+- إنشاء `docs/phase-14/periodic-monitoring-agent-runtime.md`.
+- إنشاء `docs/phase-14/completion-report.md`.
+
+التحقق:
+
+- تم تنفيذ `uv run --extra dev pytest` داخل `apps/agent`.
+- النتيجة: `1 passed`.
+- تم تنفيذ `uv run pytest` داخل `apps/api`.
+- النتيجة: `39 passed`.
+- تم تنفيذ compileall للوكيل والـ API.
+- تم تنفيذ `npm run lint`.
+- تم تنفيذ `npm run build`.
+- النتيجة: build passed.
+
 ## المرحلة الثالثة عشرة: Periodic Monitoring Scheduler Readiness
 
 الحالة: مكتملة.
@@ -191,6 +231,7 @@ https://github.com/saeed-33/ai-vps-management-system
 العمل المطلوب:
 
 - إضافة قدرة جدولة دورات المراقبة الدورية.
+- إضافة حزمة وكيل فعلية داخل `apps/agent` للمراقبة الدورية.
 - إضافة endpoints تشغيل وإيقاف وحالة scheduler.
 - تشغيل دورة أولى مباشرة عند تفعيل scheduler.
 - تحديث صفحة المراقبة الدورية للتحكم بالجدولة.
@@ -203,6 +244,10 @@ https://github.com/saeed-33/ai-vps-management-system
 - تحديث `apps/api/src/control_plane_api/modules/periodic_monitoring/service.py`.
 - تحديث `apps/api/src/control_plane_api/api/routes/periodic_monitoring.py`.
 - تحديث `apps/api/tests/test_periodic_monitoring.py`.
+- إنشاء `apps/agent/src/ai_vps_agent/periodic_monitoring/orchestrator.py`.
+- إنشاء `apps/agent/src/ai_vps_agent/periodic_monitoring/server_sub_agent.py`.
+- إنشاء `apps/agent/src/ai_vps_agent/periodic_monitoring/collectors.py`.
+- إنشاء `apps/agent/tests/test_periodic_monitoring_agent.py`.
 - تحديث `apps/admin-panel/src/features/periodic-monitoring/components/periodic-monitoring-view.tsx`.
 - تحديث `apps/admin-panel/src/lib/periodic-monitoring-client.ts`.
 - إنشاء `docs/phase-13/phase-13-plan.md`.

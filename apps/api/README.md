@@ -20,6 +20,7 @@ This is the phase 13 foundation. It provides:
 - Allowed tools foundation endpoints.
 - Periodic monitoring report foundation endpoints.
 - Periodic monitoring scheduler foundation endpoints.
+- Integration with the local `ai-vps-agent` package for report collection.
 - Smoke tests.
 
 It does not yet provide database-backed CRUD, MCP, or agent integration.

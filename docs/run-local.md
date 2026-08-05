@@ -204,6 +204,13 @@ http://127.0.0.1:3000/periodic-monitoring
 
 ## اختبار المشروع
 
+اختبار وكيل المراقبة:
+
+```powershell
+cd E:\AI_VPS_Mamgment\ai-vps-management-system\apps\agent
+uv run --extra dev pytest
+```
+
 اختبار Backend API:
 
 ```powershell

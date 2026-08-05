@@ -5,12 +5,16 @@ description = "Backend API / Control Plane for the AI VPS Management System"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "ai-vps-agent",
     "asyncpg>=0.30.0,<1.0.0",
     "fastapi>=0.116.0,<1.0.0",
     "pydantic-settings>=2.10.0,<3.0.0",
     "sqlalchemy[asyncio]>=2.0.0,<3.0.0",
     "uvicorn[standard]>=0.35.0,<1.0.0",
 ]
+
+[tool.uv.sources]
+ai-vps-agent = { path = "../agent", editable = true }
 
 [project.optional-dependencies]
 dev = [

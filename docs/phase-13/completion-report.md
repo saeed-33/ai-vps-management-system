@@ -9,6 +9,8 @@
 - إضافة scheduler start endpoint.
 - إضافة scheduler stop endpoint.
 - إضافة scheduler status endpoint.
+- إضافة حزمة `apps/agent` لتنفيذ منطق وكيل المراقبة الدورية.
+- نقل منطق إنشاء Server Sub-Agent وجمع baseline reports إلى `PeriodicMonitoringAgent`.
 - تشغيل دورة أولى مباشرة عند بدء scheduler.
 - إضافة حالة scheduler إلى صفحة `/periodic-monitoring`.
 - إضافة تحكم start/stop/interval من لوحة الإدارة.
