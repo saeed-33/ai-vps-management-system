@@ -77,7 +77,7 @@ async function getAuthorizedJson<T>(path: string, token: string): Promise<T> {
   });
 
   if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
+    throw new Error(await errorMessage(response));
   }
 
   return response.json() as Promise<T>;
@@ -95,7 +95,7 @@ async function sendAuthorizedJson<T>(path: string, token: string, payload: unkno
   });
 
   if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
+    throw new Error(await errorMessage(response));
   }
 
   return response.json() as Promise<T>;
@@ -113,7 +113,7 @@ async function postAuthorizedJson<T>(path: string, token: string, payload?: unkn
   });
 
   if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
+    throw new Error(await errorMessage(response));
   }
 
   return response.json() as Promise<T>;
@@ -141,4 +141,16 @@ export function updateServerSshAccess(token: string, serverId: string, payload: 
 
 export function testServerSshAccess(token: string, serverId: string) {
   return postAuthorizedJson<ServerSshConnectionTestResult>(`/api/v1/servers/${serverId}/ssh-access/test`, token);
+}
+
+async function errorMessage(response: Response) {
+  try {
+    const body = (await response.json()) as { detail?: unknown };
+    if (typeof body.detail === "string") {
+      return body.detail;
+    }
+  } catch {
+    // Keep the generic status message when the response body is not JSON.
+  }
+  return `Request failed with status ${response.status}`;
 }

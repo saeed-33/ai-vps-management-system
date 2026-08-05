@@ -640,6 +640,30 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run lint`.
 - تم تنفيذ `npm run build`.
 - النتيجة: lint passed وbuild passed.
+## Phase 21: Server Management UX Improvement
+
+Status: completed.
+
+Required work:
+
+- Improve the add-server form.
+- Show database vs memory persistence source.
+- Make selected server state clear.
+- Improve SSH setup and test feedback.
+- Surface backend API error details in the UI.
+
+Completed work:
+
+- Rebuilt `apps/admin-panel/src/features/servers/components/servers-view.tsx`.
+- Updated `apps/admin-panel/src/lib/servers-client.ts`.
+- Updated `apps/admin-panel/src/app/globals.css`.
+- Created `docs/phase-21`.
+
+Verification:
+
+- `npm run lint`: passed.
+- `npm run build`: passed.
+
 ## Phase 20: Database Persistence Enforcement
 
 Status: completed.

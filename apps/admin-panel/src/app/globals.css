@@ -240,6 +240,11 @@ textarea {
   border: 1px solid var(--border);
 }
 
+.server-row.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
 .status-row strong {
   display: block;
   font-size: 14px;
@@ -262,6 +267,12 @@ textarea {
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
+  gap: 6px;
+}
+
+.badge svg {
+  width: 14px;
+  height: 14px;
 }
 
 .badge.success {
@@ -334,6 +345,24 @@ textarea {
   max-width: 520px;
 }
 
+.form-wide {
+  max-width: none;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .field {
   display: grid;
   gap: 7px;
@@ -351,7 +380,35 @@ textarea {
   padding: 8px 10px;
 }
 
-.field input:focus {
+.field select {
+  min-height: 40px;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-strong);
+  color: var(--foreground);
+  padding: 8px 10px;
+}
+
+.checkbox-field {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--panel-strong);
+}
+
+.checkbox-field input {
+  width: 18px;
+  min-height: 18px;
+}
+
+.field input:focus,
+.field select:focus {
   border-color: var(--accent);
   outline: 2px solid var(--accent-soft);
 }
@@ -420,5 +477,17 @@ textarea {
   .wide-card,
   .side-card {
     grid-column: auto;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .status-row {
+    flex-direction: column;
+  }
+
+  .row-actions {
+    justify-content: flex-start;
   }
 }
