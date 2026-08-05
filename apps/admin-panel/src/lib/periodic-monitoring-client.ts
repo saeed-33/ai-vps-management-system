@@ -29,6 +29,18 @@ export type MonitoringReportAnalysis = {
   profiles_evaluated: string[];
   suggested_specialist_agents: string[];
   next_actions: string[];
+  llm_enrichment: MonitoringLlmEnrichment | null;
+};
+
+export type MonitoringLlmEnrichment = {
+  status: string;
+  provider: string;
+  model: string | null;
+  summary: string | null;
+  root_cause_hypotheses: string[];
+  recommended_questions: string[];
+  limitations: string[];
+  error: string | null;
 };
 
 export type ServerSubAgentReport = {

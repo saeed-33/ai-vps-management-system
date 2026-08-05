@@ -68,6 +68,20 @@ BOOTSTRAP_ADMIN_PASSWORD_HASH=generated_hash_here
 
 Use `BOOTSTRAP_ADMIN_EMAIL` and the original password used to generate the hash on `/login`.
 
+## Optional LLM Analysis Enrichment
+
+Periodic monitoring analysis is rule-based by default. To add local LLM enrichment through Ollama:
+
+```env
+LLM_ANALYSIS_ENABLED=true
+LLM_ANALYSIS_PROVIDER=ollama
+LLM_ANALYSIS_MODEL=llama3.1
+LLM_ANALYSIS_BASE_URL=http://127.0.0.1:11434
+LLM_ANALYSIS_TIMEOUT_SECONDS=20
+```
+
+If the LLM call fails, the rule-based analysis remains the source of truth and the report records the enrichment failure.
+
 ## Endpoints
 
 ```text
@@ -97,6 +111,7 @@ POST /api/v1/periodic-monitoring/cycles
 GET /api/v1/periodic-monitoring/cycles
 GET /api/v1/periodic-monitoring/cycles/latest
 GET /api/v1/periodic-monitoring/reports
+GET /api/v1/periodic-monitoring/analysis-reports
 POST /api/v1/periodic-monitoring/scheduler/start
 POST /api/v1/periodic-monitoring/scheduler/stop
 GET /api/v1/periodic-monitoring/scheduler/status

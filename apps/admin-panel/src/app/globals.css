@@ -594,6 +594,21 @@ textarea {
   font-size: 12px;
 }
 
+.llm-enrichment {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 10px;
+}
+
+.llm-enrichment small {
+  color: var(--muted);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
 .server-report-header {
   display: flex;
   align-items: flex-start;

@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     foundation_server_ssh_username: str = ""
     foundation_server_ssh_private_key_path: str | None = None
     foundation_server_ssh_password: str | None = None
+    llm_analysis_enabled: bool = False
+    llm_analysis_provider: str = "disabled"
+    llm_analysis_model: str = "llama3.1"
+    llm_analysis_base_url: str = "http://127.0.0.1:11434"
+    llm_analysis_timeout_seconds: float = 20.0
 
     model_config = SettingsConfigDict(
         env_file=".env",

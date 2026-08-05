@@ -11,6 +11,7 @@ from control_plane_api.core.config import Settings, get_settings
 from control_plane_api.modules.servers.service import get_active_agent_servers, get_server_ssh_access_config
 from control_plane_api.modules.periodic_monitoring.analysis import analyze_server_report
 from control_plane_api.modules.periodic_monitoring.analysis_reports import build_analysis_reports
+from control_plane_api.modules.periodic_monitoring.llm_analysis import enrich_analysis_with_llm
 from control_plane_api.modules.periodic_monitoring.persistence import (
     load_periodic_monitoring_cycles,
     persist_periodic_monitoring_cycle,
@@ -44,7 +45,7 @@ async def run_periodic_monitoring_cycle(
 
     settings = settings or get_settings()
     cycle = _to_api_cycle(MONITORING_AGENT.run_cycle(servers=await _get_agent_servers(settings), trigger=trigger))
-    cycle = _with_analysis(cycle)
+    cycle = await _with_analysis(cycle, settings)
     RECENT_CYCLES.insert(0, cycle)
     del RECENT_CYCLES[10:]
     try:
@@ -183,13 +184,19 @@ def _to_api_cycle(agent_cycle: AgentPeriodicMonitoringCycleReport) -> PeriodicMo
     return PeriodicMonitoringCycleReport.model_validate(agent_cycle.model_dump())
 
 
-def _with_analysis(cycle: PeriodicMonitoringCycleReport) -> PeriodicMonitoringCycleReport:
+async def _with_analysis(cycle: PeriodicMonitoringCycleReport, settings: Settings) -> PeriodicMonitoringCycleReport:
+    reports = []
+    for report in cycle.reports:
+        base_analysis = analyze_server_report(report)
+        enriched_analysis = await enrich_analysis_with_llm(
+            report=report,
+            base_analysis=base_analysis,
+            settings=settings,
+        )
+        reports.append(report.model_copy(update={"analysis": enriched_analysis}))
     return cycle.model_copy(
         update={
-            "reports": [
-                report.model_copy(update={"analysis": analyze_server_report(report)})
-                for report in cycle.reports
-            ]
+            "reports": reports
         }
     )
 

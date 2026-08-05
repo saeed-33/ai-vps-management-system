@@ -33,6 +33,18 @@ class MonitoringReportAnalysis(BaseModel):
     profiles_evaluated: list[str] = Field(default_factory=list)
     suggested_specialist_agents: list[str] = Field(default_factory=list)
     next_actions: list[str] = Field(default_factory=list)
+    llm_enrichment: "MonitoringLlmEnrichment | None" = None
+
+
+class MonitoringLlmEnrichment(BaseModel):
+    status: str = "skipped"
+    provider: str = "disabled"
+    model: str | None = None
+    summary: str | None = None
+    root_cause_hypotheses: list[str] = Field(default_factory=list)
+    recommended_questions: list[str] = Field(default_factory=list)
+    limitations: list[str] = Field(default_factory=list)
+    error: str | None = None
 
 
 class ServerSubAgentReport(BaseModel):

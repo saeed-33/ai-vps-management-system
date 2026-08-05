@@ -411,6 +411,15 @@ function AnalysisReportCard({ report }: { report: PeriodicMonitoringAnalysisRepo
         <span className={`badge ${analysisBadge(report.analysis.severity)}`}>{report.analysis.severity}</span>
       </div>
       <p>{report.analysis.summary}</p>
+      {report.analysis.llm_enrichment ? (
+        <div className="llm-enrichment">
+          <span className={`badge ${report.analysis.llm_enrichment.status === "completed" ? "success" : "neutral"}`}>
+            LLM {report.analysis.llm_enrichment.status}
+          </span>
+          {report.analysis.llm_enrichment.summary ? <p>{report.analysis.llm_enrichment.summary}</p> : null}
+          {report.analysis.llm_enrichment.error ? <small dir="ltr">{report.analysis.llm_enrichment.error}</small> : null}
+        </div>
+      ) : null}
       <div className="server-report-meta">
         <span>{report.metrics_count} metrics</span>
         <span>{report.monitoring_profiles.join(", ") || "no profiles"}</span>

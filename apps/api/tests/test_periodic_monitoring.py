@@ -1,9 +1,11 @@
 from fastapi.testclient import TestClient
+import pytest
 
 from control_plane_api.core.config import Settings
 from control_plane_api.core.security import hash_password
 from control_plane_api.main import create_app
 from control_plane_api.modules.periodic_monitoring.analysis import analyze_server_report
+from control_plane_api.modules.periodic_monitoring.llm_analysis import enrich_analysis_with_llm
 from control_plane_api.modules.periodic_monitoring.persistence import database_uuid, stable_uuid
 from control_plane_api.modules.periodic_monitoring.service import RECENT_CYCLES, stop_periodic_monitoring_scheduler
 from control_plane_api.schemas.periodic_monitoring import MonitoringMetricSample, ServerSubAgentReport
@@ -92,6 +94,7 @@ def test_periodic_monitoring_cycle_produces_analyzed_report() -> None:
     assert report["analysis"]["severity"] == "info"
     assert report["analysis"]["findings"] == []
     assert report["analysis"]["profiles_evaluated"] == ["profile-linux-baseline"]
+    assert report["analysis"]["llm_enrichment"]["status"] == "skipped"
 
 
 def test_periodic_monitoring_analysis_flags_critical_metrics() -> None:
@@ -148,6 +151,41 @@ def test_periodic_monitoring_analysis_records_profile_coverage_gap() -> None:
     assert analysis.severity == "info"
     assert analysis.profiles_evaluated == ["profile-nginx-health"]
     assert analysis.findings[0].code == "profile-nginx-health_coverage_gap"
+
+
+@pytest.mark.anyio
+async def test_llm_analysis_failure_preserves_rule_based_analysis() -> None:
+    report = ServerSubAgentReport(
+        sub_agent_id="server-sub-agent-srv-1",
+        server_id="srv-1",
+        server_name="server-one",
+        status="completed",
+        started_at="2026-08-05T10:00:00Z",
+        completed_at="2026-08-05T10:00:01Z",
+        monitoring_profiles=["profile-linux-baseline"],
+        metrics=[],
+        raw_snapshot={},
+        collection_summary="Baseline metrics collected successfully by periodic monitoring agent.",
+    )
+    base_analysis = analyze_server_report(report)
+
+    enriched = await enrich_analysis_with_llm(
+        report=report,
+        base_analysis=base_analysis,
+        settings=Settings(
+            app_env="test",
+            auth_secret_key="test-secret",
+            llm_analysis_enabled=True,
+            llm_analysis_provider="ollama",
+            llm_analysis_base_url="http://127.0.0.1:1",
+            llm_analysis_timeout_seconds=0.1,
+        ),
+    )
+
+    assert enriched.status == base_analysis.status
+    assert enriched.findings == base_analysis.findings
+    assert enriched.llm_enrichment is not None
+    assert enriched.llm_enrichment.status == "failed"
 
 
 def test_periodic_monitoring_lists_created_reports() -> None:

@@ -2,6 +2,40 @@
 
 هذا الملف يوثق العمل المطلوب وما تم إنجازه في كل مرحلة.
 
+## المرحلة الثامنة والعشرون: إثراء تحليل التقارير عبر LLM
+
+الحالة: مكتملة.
+
+العمل المطلوب:
+
+- إضافة طبقة LLM اختيارية لتحليل التقارير قبل المحادثة.
+- إبقاء التحليل القاعدي هو مصدر الحقيقة.
+- دعم تعطيل LLM افتراضيا.
+- دعم Ollama المحلي كمزود أولي.
+- حفظ حالة LLM داخل تقرير التحليل.
+- ضمان fallback عند فشل LLM.
+
+ما تم إنجازه:
+
+- إضافة إعدادات `LLM_ANALYSIS_*`.
+- إضافة `MonitoringLlmEnrichment`.
+- إضافة `llm_analysis.py`.
+- ربط LLM enrichment بعد التحليل القاعدي.
+- عرض حالة LLM في لوحة الإدارة.
+- تحديث `.env.example` و`apps/api/README.md`.
+- إضافة اختبارات لفشل LLM والـ fallback.
+- إنشاء `docs/phase-28/phase-28-plan.md`.
+- إنشاء `docs/phase-28/completion-report.md`.
+
+التحقق:
+
+- `uv lock`: نجح.
+- `uv run pytest` داخل `apps/api`: نجح، 52 اختبارا.
+- `uv run python -m compileall src scripts` داخل `apps/api`: نجح.
+- `uv run --extra dev pytest` داخل `apps/agent`: نجح، 8 اختبارات.
+- `npm run lint` داخل `apps/admin-panel`: نجح.
+- `npm run build` داخل `apps/admin-panel`: نجح.
+
 ## المرحلة السابعة والعشرون: تنظيم الواجهة وقواعد SOLID
 
 الحالة: مكتملة.
