@@ -459,6 +459,20 @@ textarea {
   font-size: 12px;
 }
 
+.analysis-summary small,
+.finding-list small {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.analysis-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .finding-list {
   display: grid;
   gap: 8px;
@@ -484,6 +498,15 @@ textarea {
 
 .finding-list p {
   margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.next-action-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-inline-start: 18px;
   color: var(--muted);
   font-size: 12px;
 }

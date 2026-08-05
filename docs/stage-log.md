@@ -2,6 +2,37 @@
 
 هذا الملف يوثق العمل المطلوب وما تم إنجازه في كل مرحلة.
 
+## المرحلة الخامسة والعشرون: تحليل تقارير مرتبط بملفات المراقبة
+
+الحالة: مكتملة.
+
+العمل المطلوب:
+
+- استخدام تعريفات ملفات المراقبة كمصدر لقواعد التحليل.
+- تسجيل ملف المراقبة وملاحظة التفسير داخل كل finding.
+- تسجيل فجوات التغطية عندما يتوقع الملف مقاييس غير موجودة في التقرير.
+- اقتراح الوكلاء المتخصصين كبيانات تحليل فقط دون تشغيلهم.
+- عرض metadata التحليل في لوحة الإدارة.
+
+ما تم إنجازه:
+
+- تحويل التحليل من عتبات ثابتة فقط إلى تحليل يعتمد على `MonitoringProfileDetail`.
+- إضافة `profile_id` و`interpretation_note` و`suggested_specialist_agents` إلى findings.
+- إضافة `profiles_evaluated` و`suggested_specialist_agents` و`next_actions` إلى analysis.
+- إضافة coverage gap informational finding.
+- تحديث صفحة المراقبة الدورية لعرض الملفات المقيمة والوكلاء المقترحين والخطوات التالية.
+- تحديث اختبارات API.
+- إنشاء `docs/phase-25/phase-25-plan.md`.
+- إنشاء `docs/phase-25/completion-report.md`.
+
+التحقق:
+
+- `uv run pytest` داخل `apps/api`: نجح، 50 اختبارا.
+- `uv run --extra dev pytest` داخل `apps/agent`: نجح، 8 اختبارات.
+- `uv run python -m compileall src scripts` داخل `apps/api`: نجح.
+- `npm run lint` داخل `apps/admin-panel`: نجح.
+- `npm run build` داخل `apps/admin-panel`: نجح.
+
 ## المرحلة الرابعة والعشرون: تحليل تقارير المراقبة الدورية
 
 الحالة: مكتملة.

@@ -91,6 +91,7 @@ def test_periodic_monitoring_cycle_produces_analyzed_report() -> None:
     assert report["analysis"]["status"] == "no_issue"
     assert report["analysis"]["severity"] == "info"
     assert report["analysis"]["findings"] == []
+    assert report["analysis"]["profiles_evaluated"] == ["profile-linux-baseline"]
 
 
 def test_periodic_monitoring_analysis_flags_critical_metrics() -> None:
@@ -120,7 +121,33 @@ def test_periodic_monitoring_analysis_flags_critical_metrics() -> None:
 
     assert analysis.status == "confirmed_issue"
     assert analysis.severity == "critical"
-    assert analysis.findings[0].code == "memory_usage_percent_critical"
+    assert analysis.profiles_evaluated == ["profile-linux-baseline"]
+    assert analysis.findings[0].code == "profile-linux-baseline_memory_usage_percent_critical"
+    assert analysis.findings[0].profile_id == "profile-linux-baseline"
+    assert analysis.findings[0].suggested_specialist_agents == ["cpu-memory-specialist", "storage-specialist"]
+    assert analysis.suggested_specialist_agents == ["cpu-memory-specialist", "storage-specialist"]
+
+
+def test_periodic_monitoring_analysis_records_profile_coverage_gap() -> None:
+    report = ServerSubAgentReport(
+        sub_agent_id="server-sub-agent-srv-1",
+        server_id="srv-1",
+        server_name="server-one",
+        status="completed",
+        started_at="2026-08-05T10:00:00Z",
+        completed_at="2026-08-05T10:00:01Z",
+        monitoring_profiles=["profile-nginx-health"],
+        metrics=[],
+        raw_snapshot={},
+        collection_summary="Baseline metrics collected successfully by periodic monitoring agent.",
+    )
+
+    analysis = analyze_server_report(report)
+
+    assert analysis.status == "no_issue"
+    assert analysis.severity == "info"
+    assert analysis.profiles_evaluated == ["profile-nginx-health"]
+    assert analysis.findings[0].code == "profile-nginx-health_coverage_gap"
 
 
 def test_periodic_monitoring_lists_created_reports() -> None:

@@ -289,8 +289,18 @@ function ServerReportCard({ report }: { report: ServerSubAgentReport }) {
         <div>
           <strong>{report.analysis.status}</strong>
           <p>{report.analysis.summary}</p>
+          <small>{report.analysis.profiles_evaluated.join(", ") || "no profile rules evaluated"}</small>
         </div>
       </div>
+      {report.analysis.suggested_specialist_agents.length > 0 ? (
+        <div className="analysis-tags">
+          {report.analysis.suggested_specialist_agents.map((agent) => (
+            <span className="badge warning" key={agent}>
+              {agent}
+            </span>
+          ))}
+        </div>
+      ) : null}
       {errorType || error ? (
         <p className="notice danger" dir="ltr">
           {errorType}: {error}
@@ -304,8 +314,16 @@ function ServerReportCard({ report }: { report: ServerSubAgentReport }) {
               <div>
                 <strong>{finding.title}</strong>
                 <p>{finding.detail}</p>
+                {finding.interpretation_note ? <small>{finding.interpretation_note}</small> : null}
               </div>
             </li>
+          ))}
+        </ul>
+      ) : null}
+      {report.analysis.next_actions.length > 0 ? (
+        <ul className="next-action-list">
+          {report.analysis.next_actions.map((action) => (
+            <li key={action}>{action}</li>
           ))}
         </ul>
       ) : null}

@@ -16,6 +16,9 @@ export type MonitoringAnalysisFinding = {
   metric: string | null;
   value: number | string | boolean | null;
   threshold: number | string | boolean | null;
+  profile_id: string | null;
+  interpretation_note: string | null;
+  suggested_specialist_agents: string[];
 };
 
 export type MonitoringReportAnalysis = {
@@ -23,6 +26,9 @@ export type MonitoringReportAnalysis = {
   severity: string;
   summary: string;
   findings: MonitoringAnalysisFinding[];
+  profiles_evaluated: string[];
+  suggested_specialist_agents: string[];
+  next_actions: string[];
 };
 
 export type ServerSubAgentReport = {

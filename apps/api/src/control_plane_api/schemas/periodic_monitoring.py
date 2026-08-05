@@ -20,6 +20,9 @@ class MonitoringAnalysisFinding(BaseModel):
     metric: str | None = None
     value: float | str | bool | None = None
     threshold: float | str | bool | None = None
+    profile_id: str | None = None
+    interpretation_note: str | None = None
+    suggested_specialist_agents: list[str] = Field(default_factory=list)
 
 
 class MonitoringReportAnalysis(BaseModel):
@@ -27,6 +30,9 @@ class MonitoringReportAnalysis(BaseModel):
     severity: str = "info"
     summary: str = "Report has not been analyzed yet."
     findings: list[MonitoringAnalysisFinding] = Field(default_factory=list)
+    profiles_evaluated: list[str] = Field(default_factory=list)
+    suggested_specialist_agents: list[str] = Field(default_factory=list)
+    next_actions: list[str] = Field(default_factory=list)
 
 
 class ServerSubAgentReport(BaseModel):
