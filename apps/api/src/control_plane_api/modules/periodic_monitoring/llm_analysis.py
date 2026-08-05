@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, ValidationError
 
 from control_plane_api.core.config import Settings
 from control_plane_api.schemas.periodic_monitoring import (
+    MonitoringAnalysisFinding,
     MonitoringLlmEnrichment,
     MonitoringReportAnalysis,
     ServerSubAgentReport,
@@ -13,26 +14,28 @@ from control_plane_api.schemas.periodic_monitoring import (
 
 
 class LlmAnalysisAdapter(Protocol):
-    async def enrich(
+    async def analyze(
         self,
         *,
         report: ServerSubAgentReport,
-        base_analysis: MonitoringReportAnalysis,
-    ) -> MonitoringLlmEnrichment:
-        """Create an optional LLM enrichment without changing rule-based findings."""
+        rule_signals: MonitoringReportAnalysis,
+    ) -> MonitoringReportAnalysis:
+        """Create the final report analysis. Rule signals are input only."""
 
 
 class DisabledLlmAnalysisAdapter:
-    async def enrich(
+    async def analyze(
         self,
         *,
         report: ServerSubAgentReport,
-        base_analysis: MonitoringReportAnalysis,
-    ) -> MonitoringLlmEnrichment:
-        return MonitoringLlmEnrichment(
-            status="skipped",
+        rule_signals: MonitoringReportAnalysis,
+    ) -> MonitoringReportAnalysis:
+        return _unavailable_analysis(
             provider="disabled",
-            limitations=["LLM analysis is disabled; rule-based analysis is the source of truth."],
+            model=None,
+            profiles_evaluated=rule_signals.profiles_evaluated,
+            suggested_specialist_agents=rule_signals.suggested_specialist_agents,
+            error=None,
         )
 
 
@@ -42,15 +45,15 @@ class OllamaLlmAnalysisAdapter:
         self._model = settings.llm_analysis_model
         self._timeout = settings.llm_analysis_timeout_seconds
 
-    async def enrich(
+    async def analyze(
         self,
         *,
         report: ServerSubAgentReport,
-        base_analysis: MonitoringReportAnalysis,
-    ) -> MonitoringLlmEnrichment:
+        rule_signals: MonitoringReportAnalysis,
+    ) -> MonitoringReportAnalysis:
         payload = {
             "model": self._model,
-            "prompt": _prompt(report, base_analysis),
+            "prompt": _prompt(report, rule_signals),
             "stream": False,
             "format": "json",
         }
@@ -59,43 +62,58 @@ class OllamaLlmAnalysisAdapter:
             response.raise_for_status()
         body = response.json()
         generated = str(body.get("response", "{}"))
-        narrative = _parse_narrative(generated)
-        return MonitoringLlmEnrichment(
+        llm_payload = _parse_llm_payload(generated)
+        enrichment = MonitoringLlmEnrichment(
             status="completed",
             provider="ollama",
             model=self._model,
-            summary=narrative.summary,
-            root_cause_hypotheses=narrative.root_cause_hypotheses,
-            recommended_questions=narrative.recommended_questions,
-            limitations=narrative.limitations,
+            summary=llm_payload.llm_summary,
+            root_cause_hypotheses=llm_payload.root_cause_hypotheses,
+            recommended_questions=llm_payload.recommended_questions,
+            limitations=llm_payload.limitations,
+        )
+        return MonitoringReportAnalysis(
+            status=llm_payload.status,
+            severity=llm_payload.severity,
+            summary=llm_payload.summary,
+            findings=llm_payload.findings,
+            profiles_evaluated=rule_signals.profiles_evaluated,
+            suggested_specialist_agents=llm_payload.suggested_specialist_agents,
+            next_actions=llm_payload.next_actions,
+            llm_enrichment=enrichment,
         )
 
 
-class _LlmNarrative(BaseModel):
+class _LlmAnalysisPayload(BaseModel):
+    status: str
+    severity: str
     summary: str
+    findings: list[MonitoringAnalysisFinding] = Field(default_factory=list)
+    suggested_specialist_agents: list[str] = Field(default_factory=list)
+    next_actions: list[str] = Field(default_factory=list)
+    llm_summary: str | None = None
     root_cause_hypotheses: list[str] = Field(default_factory=list)
     recommended_questions: list[str] = Field(default_factory=list)
     limitations: list[str] = Field(default_factory=list)
 
 
-async def enrich_analysis_with_llm(
+async def analyze_report_with_llm(
     *,
     report: ServerSubAgentReport,
-    base_analysis: MonitoringReportAnalysis,
+    rule_signals: MonitoringReportAnalysis,
     settings: Settings,
 ) -> MonitoringReportAnalysis:
     adapter = _adapter_for(settings)
     try:
-        enrichment = await adapter.enrich(report=report, base_analysis=base_analysis)
+        return await adapter.analyze(report=report, rule_signals=rule_signals)
     except Exception as exc:
-        enrichment = MonitoringLlmEnrichment(
-            status="failed",
+        return _unavailable_analysis(
             provider=settings.llm_analysis_provider,
             model=settings.llm_analysis_model,
-            limitations=["Rule-based analysis was preserved because LLM enrichment failed."],
+            profiles_evaluated=rule_signals.profiles_evaluated,
+            suggested_specialist_agents=rule_signals.suggested_specialist_agents,
             error=f"{exc.__class__.__name__}: {exc}",
         )
-    return base_analysis.model_copy(update={"llm_enrichment": enrichment})
 
 
 def _adapter_for(settings: Settings) -> LlmAnalysisAdapter:
@@ -106,7 +124,34 @@ def _adapter_for(settings: Settings) -> LlmAnalysisAdapter:
     return DisabledLlmAnalysisAdapter()
 
 
-def _prompt(report: ServerSubAgentReport, base_analysis: MonitoringReportAnalysis) -> str:
+def _unavailable_analysis(
+    *,
+    provider: str,
+    model: str | None,
+    profiles_evaluated: list[str],
+    suggested_specialist_agents: list[str],
+    error: str | None,
+) -> MonitoringReportAnalysis:
+    status = "analysis_failed" if error else "analysis_unavailable"
+    return MonitoringReportAnalysis(
+        status=status,
+        severity="warning",
+        summary="LLM analysis was not produced. No final diagnostic conclusion is available.",
+        findings=[],
+        profiles_evaluated=profiles_evaluated,
+        suggested_specialist_agents=suggested_specialist_agents,
+        next_actions=["Enable a supported LLM provider and rerun periodic monitoring analysis."],
+        llm_enrichment=MonitoringLlmEnrichment(
+            status="failed" if error else "skipped",
+            provider=provider,
+            model=model,
+            limitations=["Final report analysis is LLM-only; rule-based signals are not emitted as final analysis."],
+            error=error,
+        ),
+    )
+
+
+def _prompt(report: ServerSubAgentReport, rule_signals: MonitoringReportAnalysis) -> str:
     context = {
         "server": {
             "id": report.server_id,
@@ -115,24 +160,37 @@ def _prompt(report: ServerSubAgentReport, base_analysis: MonitoringReportAnalysi
             "monitoring_profiles": report.monitoring_profiles,
         },
         "metrics": [metric.model_dump() for metric in report.metrics],
-        "rule_based_analysis": base_analysis.model_dump(exclude={"llm_enrichment"}),
+        "rule_signals_not_final_analysis": rule_signals.model_dump(exclude={"llm_enrichment"}),
         "constraints": [
+            "You are the only component allowed to produce the final report analysis.",
+            "Rule signals are evidence only, not final conclusions.",
             "Do not propose command execution.",
             "Do not claim certainty beyond the provided metrics.",
-            "Treat rule-based findings as the source of truth.",
             "Return JSON only.",
         ],
+        "json_schema": {
+            "status": "no_issue | suspected_issue | confirmed_issue | needs_human_review",
+            "severity": "info | warning | critical",
+            "summary": "final concise diagnostic conclusion",
+            "findings": "array of findings with code, severity, title, detail, metric, value, threshold, profile_id, interpretation_note, suggested_specialist_agents",
+            "suggested_specialist_agents": "array of agent ids",
+            "next_actions": "array of safe review-only next actions",
+            "llm_summary": "narrative summary for UI",
+            "root_cause_hypotheses": "array",
+            "recommended_questions": "array",
+            "limitations": "array",
+        },
     }
     return (
-        "You are analyzing a periodic VPS monitoring report. "
-        "Produce a concise diagnostic enrichment in JSON with keys: "
-        "summary, root_cause_hypotheses, recommended_questions, limitations.\n\n"
+        "Analyze this periodic VPS monitoring report and produce the final report analysis. "
+        "The final analysis must be based on the metrics, monitoring profiles, and rule signals, "
+        "but you must make the final diagnostic judgment.\n\n"
         f"{json.dumps(context, ensure_ascii=False)}"
     )
 
 
-def _parse_narrative(value: str) -> _LlmNarrative:
+def _parse_llm_payload(value: str) -> _LlmAnalysisPayload:
     try:
-        return _LlmNarrative.model_validate_json(value)
+        return _LlmAnalysisPayload.model_validate_json(value)
     except ValidationError:
-        return _LlmNarrative.model_validate(json.loads(value))
+        return _LlmAnalysisPayload.model_validate(json.loads(value))

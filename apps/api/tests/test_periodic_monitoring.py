@@ -5,7 +5,7 @@ from control_plane_api.core.config import Settings
 from control_plane_api.core.security import hash_password
 from control_plane_api.main import create_app
 from control_plane_api.modules.periodic_monitoring.analysis import analyze_server_report
-from control_plane_api.modules.periodic_monitoring.llm_analysis import enrich_analysis_with_llm
+from control_plane_api.modules.periodic_monitoring.llm_analysis import analyze_report_with_llm
 from control_plane_api.modules.periodic_monitoring.persistence import database_uuid, stable_uuid
 from control_plane_api.modules.periodic_monitoring.service import RECENT_CYCLES, stop_periodic_monitoring_scheduler
 from control_plane_api.schemas.periodic_monitoring import MonitoringMetricSample, ServerSubAgentReport
@@ -90,8 +90,8 @@ def test_periodic_monitoring_cycle_produces_analyzed_report() -> None:
     report = body["reports"][0]
     assert report["sub_agent_id"] == "server-sub-agent-srv-foundation-001"
     assert len(report["metrics"]) == 5
-    assert report["analysis"]["status"] == "no_issue"
-    assert report["analysis"]["severity"] == "info"
+    assert report["analysis"]["status"] == "analysis_unavailable"
+    assert report["analysis"]["severity"] == "warning"
     assert report["analysis"]["findings"] == []
     assert report["analysis"]["profiles_evaluated"] == ["profile-linux-baseline"]
     assert report["analysis"]["llm_enrichment"]["status"] == "skipped"
@@ -154,7 +154,7 @@ def test_periodic_monitoring_analysis_records_profile_coverage_gap() -> None:
 
 
 @pytest.mark.anyio
-async def test_llm_analysis_failure_preserves_rule_based_analysis() -> None:
+async def test_llm_analysis_failure_does_not_emit_rule_based_final_analysis() -> None:
     report = ServerSubAgentReport(
         sub_agent_id="server-sub-agent-srv-1",
         server_id="srv-1",
@@ -167,11 +167,11 @@ async def test_llm_analysis_failure_preserves_rule_based_analysis() -> None:
         raw_snapshot={},
         collection_summary="Baseline metrics collected successfully by periodic monitoring agent.",
     )
-    base_analysis = analyze_server_report(report)
+    rule_signals = analyze_server_report(report)
 
-    enriched = await enrich_analysis_with_llm(
+    analysis = await analyze_report_with_llm(
         report=report,
-        base_analysis=base_analysis,
+        rule_signals=rule_signals,
         settings=Settings(
             app_env="test",
             auth_secret_key="test-secret",
@@ -182,10 +182,11 @@ async def test_llm_analysis_failure_preserves_rule_based_analysis() -> None:
         ),
     )
 
-    assert enriched.status == base_analysis.status
-    assert enriched.findings == base_analysis.findings
-    assert enriched.llm_enrichment is not None
-    assert enriched.llm_enrichment.status == "failed"
+    assert analysis.status == "analysis_failed"
+    assert analysis.severity == "warning"
+    assert analysis.findings == []
+    assert analysis.llm_enrichment is not None
+    assert analysis.llm_enrichment.status == "failed"
 
 
 def test_periodic_monitoring_lists_created_reports() -> None:
@@ -228,7 +229,7 @@ def test_periodic_monitoring_lists_separate_analysis_reports() -> None:
     analysis_report = body["analysis_reports"][0]
     assert analysis_report["source_cycle_id"] == cycle["cycle_id"]
     assert analysis_report["server_id"] == cycle["reports"][0]["server_id"]
-    assert analysis_report["analysis"]["status"] == "no_issue"
+    assert analysis_report["analysis"]["status"] == "analysis_unavailable"
     assert analysis_report["metrics_count"] == 5
 
 

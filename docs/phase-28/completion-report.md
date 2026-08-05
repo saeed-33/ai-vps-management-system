@@ -14,7 +14,7 @@ Completed.
   - Ollama adapter,
   - fallback handling.
 - Integrated LLM enrichment after rule-based periodic report analysis.
-- Kept rule-based analysis as the source of truth.
+- Superseded by Phase 30: final report analysis is now LLM-only.
 - Added UI fields for LLM enrichment status, summary, and error.
 - Added `.env.example` settings for LLM analysis.
 - Updated API README with Ollama setup notes.
@@ -28,7 +28,7 @@ Default:
 
 - LLM enrichment is disabled.
 - Reports include `llm_enrichment.status = skipped`.
-- Rule-based analysis remains fully available.
+- Phase 30 changes this behavior: disabled LLM now means no final diagnostic analysis is produced.
 
 When enabled with Ollama:
 
@@ -39,7 +39,7 @@ When enabled with Ollama:
 If the LLM call fails:
 
 - The system does not fail the monitoring cycle.
-- Rule-based analysis remains stored.
+- Phase 30 changes this behavior: rule-based output is no longer stored as final analysis.
 - The report records `llm_enrichment.status = failed` and the error.
 
 ## Verification
