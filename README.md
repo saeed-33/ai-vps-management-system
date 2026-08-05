@@ -39,6 +39,7 @@ tests/
 
 ## التوثيق
 
+- `docs/run-local.md`: دليل تشغيل المشروع محليا وإعداد Bootstrap Super Admin.
 - `docs/phase-1/`: وثائق تثبيت النطاق والبنية.
 - `docs/phase-2/`: وثائق تأسيس المشروع والمستودع.
 - `docs/phase-3/`: وثائق قاعدة البيانات والنماذج الأساسية.
@@ -55,6 +56,12 @@ tests/
 - `docs/stage-log.md`: سجل المراحل وما تم إنجازه.
 
 ## تشغيل API
+
+راجع دليل التشغيل الكامل:
+
+```text
+docs/run-local.md
+```
 
 ```bash
 cd apps/api
@@ -85,9 +92,18 @@ http://127.0.0.1:3000
 
 ## إنشاء Bootstrap Admin Password Hash
 
+السوبر آدمن الحالي هو Bootstrap Admin معرف عبر متغيرات البيئة، وليس مستخدما محفوظا في قاعدة البيانات بعد.
+
 ```bash
 cd apps/api
 uv run python scripts/hash_password.py
+```
+
+بعد توليد الهاش ضعه في `apps/api/.env`:
+
+```env
+BOOTSTRAP_ADMIN_EMAIL=admin@example.com
+BOOTSTRAP_ADMIN_PASSWORD_HASH=ضع_الهاش_هنا
 ```
 
 ## GitHub

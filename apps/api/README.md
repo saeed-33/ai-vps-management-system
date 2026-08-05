@@ -41,6 +41,8 @@ uv run pytest
 
 ## Bootstrap Admin Password Hash
 
+The current super admin is a bootstrap admin loaded from environment variables. It is not a database user yet.
+
 ```bash
 uv run python scripts/hash_password.py
 ```
@@ -50,6 +52,16 @@ Set the result in:
 ```text
 BOOTSTRAP_ADMIN_PASSWORD_HASH=
 ```
+
+Required auth environment:
+
+```env
+AUTH_SECRET_KEY=change_me_to_a_long_random_value
+BOOTSTRAP_ADMIN_EMAIL=admin@example.com
+BOOTSTRAP_ADMIN_PASSWORD_HASH=generated_hash_here
+```
+
+Use `BOOTSTRAP_ADMIN_EMAIL` and the original password used to generate the hash on `/login`.
 
 ## Endpoints
 

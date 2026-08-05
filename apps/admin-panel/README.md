@@ -44,3 +44,20 @@ npm run build
 ```text
 NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
 ```
+
+## Login
+
+Open:
+
+```text
+http://127.0.0.1:3000/login
+```
+
+Use the Backend bootstrap admin credentials:
+
+```text
+Email: BOOTSTRAP_ADMIN_EMAIL
+Password: original password used to generate BOOTSTRAP_ADMIN_PASSWORD_HASH
+```
+
+The access token is stored locally in the browser for the foundation pages.
