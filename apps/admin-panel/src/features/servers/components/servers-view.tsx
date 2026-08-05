@@ -207,6 +207,7 @@ export function ServersView() {
                 <span>
                   {server.environment} / {server.os_family ?? "unknown"} / {server.monitoring_status}
                 </span>
+                <span>source: {server.source}</span>
               </div>
               <button className="button" type="button" onClick={() => setSelectedServerId(server.id)}>
                 {selectedServerId === server.id ? "selected" : "select"}

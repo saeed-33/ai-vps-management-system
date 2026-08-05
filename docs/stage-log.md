@@ -640,6 +640,35 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run lint`.
 - تم تنفيذ `npm run build`.
 - النتيجة: lint passed وbuild passed.
+## Phase 20: Database Persistence Enforcement
+
+Status: completed.
+
+Required work:
+
+- Diagnose why added servers disappeared after backend restart.
+- Run the project PostgreSQL database and apply migration.
+- Point the API to the project database.
+- Prevent silent memory fallback when `DATABASE_URL` is configured.
+- Show persistence source in the admin panel.
+
+Completed work:
+
+- Started `ai-vps-postgres-dev` on host port `55432`.
+- Applied `packages/database/migrations/0001_initial_schema.sql`.
+- Updated local API database URL to `localhost:55432`.
+- Updated server routes to return `503` if configured DB persistence fails.
+- Updated routes to use app-scoped settings.
+- Updated `/servers` to show `source`.
+- Created `docs/phase-20`.
+
+Verification:
+
+- `uv run pytest` in `apps/api`: `47 passed`.
+- `uv run python -m compileall src scripts` in `apps/api`: passed.
+- `npm run lint`: passed.
+- `GET /health/ready`: ready.
+
 ## Phase 19: Periodic Monitoring Report Visibility Completion
 
 Status: completed.

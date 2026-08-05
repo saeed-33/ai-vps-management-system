@@ -32,10 +32,14 @@ SCHEDULER_RUNS_COUNT = 0
 SCHEDULER_LAST_ERROR: str | None = None
 
 
-async def run_periodic_monitoring_cycle(*, trigger: str = "manual") -> PeriodicMonitoringCycleReport:
+async def run_periodic_monitoring_cycle(
+    *,
+    trigger: str = "manual",
+    settings: Settings | None = None,
+) -> PeriodicMonitoringCycleReport:
     global SCHEDULER_LAST_ERROR
 
-    settings = get_settings()
+    settings = settings or get_settings()
     cycle = _to_api_cycle(MONITORING_AGENT.run_cycle(servers=await _get_agent_servers(settings), trigger=trigger))
     RECENT_CYCLES.insert(0, cycle)
     del RECENT_CYCLES[10:]
@@ -46,7 +50,11 @@ async def run_periodic_monitoring_cycle(*, trigger: str = "manual") -> PeriodicM
     return cycle
 
 
-async def start_periodic_monitoring_scheduler(interval_seconds: int) -> PeriodicMonitoringSchedulerStatus:
+async def start_periodic_monitoring_scheduler(
+    interval_seconds: int,
+    *,
+    settings: Settings | None = None,
+) -> PeriodicMonitoringSchedulerStatus:
     global SCHEDULER_INTERVAL_SECONDS
     global SCHEDULER_LAST_ERROR
     global SCHEDULER_LAST_RUN_AT
@@ -62,11 +70,11 @@ async def start_periodic_monitoring_scheduler(interval_seconds: int) -> Periodic
     SCHEDULER_STARTED_AT = datetime.now(UTC)
     SCHEDULER_LAST_ERROR = None
     SCHEDULER_RUNS_COUNT = 0
-    first_cycle = await run_periodic_monitoring_cycle(trigger="scheduler")
+    first_cycle = await run_periodic_monitoring_cycle(trigger="scheduler", settings=settings)
     SCHEDULER_LAST_RUN_AT = first_cycle.completed_at
     SCHEDULER_RUNS_COUNT = 1
     SCHEDULER_NEXT_RUN_AT = datetime.now(UTC) + timedelta(seconds=interval_seconds)
-    SCHEDULER_TASK = asyncio.create_task(_scheduler_loop(interval_seconds))
+    SCHEDULER_TASK = asyncio.create_task(_scheduler_loop(interval_seconds, settings=settings))
     return get_periodic_monitoring_scheduler_status()
 
 
@@ -97,7 +105,7 @@ def get_periodic_monitoring_scheduler_status() -> PeriodicMonitoringSchedulerSta
     )
 
 
-async def _scheduler_loop(interval_seconds: int) -> None:
+async def _scheduler_loop(interval_seconds: int, *, settings: Settings | None = None) -> None:
     global SCHEDULER_LAST_ERROR
     global SCHEDULER_LAST_RUN_AT
     global SCHEDULER_NEXT_RUN_AT
@@ -107,7 +115,7 @@ async def _scheduler_loop(interval_seconds: int) -> None:
         SCHEDULER_NEXT_RUN_AT = datetime.now(UTC) + timedelta(seconds=interval_seconds)
         await asyncio.sleep(interval_seconds)
         try:
-            cycle = await run_periodic_monitoring_cycle(trigger="scheduler")
+            cycle = await run_periodic_monitoring_cycle(trigger="scheduler", settings=settings)
             SCHEDULER_LAST_RUN_AT = cycle.completed_at
             SCHEDULER_RUNS_COUNT += 1
             SCHEDULER_LAST_ERROR = None
@@ -115,9 +123,10 @@ async def _scheduler_loop(interval_seconds: int) -> None:
             SCHEDULER_LAST_ERROR = str(exc)
 
 
-async def list_periodic_monitoring_cycles() -> PeriodicMonitoringCyclesListResponse:
+async def list_periodic_monitoring_cycles(settings: Settings | None = None) -> PeriodicMonitoringCyclesListResponse:
+    settings = settings or get_settings()
     try:
-        persisted_cycles = await load_periodic_monitoring_cycles(get_settings())
+        persisted_cycles = await load_periodic_monitoring_cycles(settings)
     except Exception:  # pragma: no cover - database availability depends on local environment.
         persisted_cycles = None
     if persisted_cycles is not None:
@@ -125,9 +134,10 @@ async def list_periodic_monitoring_cycles() -> PeriodicMonitoringCyclesListRespo
     return PeriodicMonitoringCyclesListResponse(cycles=RECENT_CYCLES)
 
 
-async def get_latest_periodic_monitoring_cycle() -> PeriodicMonitoringCycleReport | None:
+async def get_latest_periodic_monitoring_cycle(settings: Settings | None = None) -> PeriodicMonitoringCycleReport | None:
+    settings = settings or get_settings()
     try:
-        persisted_cycles = await load_periodic_monitoring_cycles(get_settings(), limit=1)
+        persisted_cycles = await load_periodic_monitoring_cycles(settings, limit=1)
     except Exception:  # pragma: no cover - database availability depends on local environment.
         persisted_cycles = None
     if persisted_cycles:
@@ -135,8 +145,8 @@ async def get_latest_periodic_monitoring_cycle() -> PeriodicMonitoringCycleRepor
     return RECENT_CYCLES[0] if RECENT_CYCLES else None
 
 
-async def list_periodic_monitoring_reports() -> PeriodicMonitoringReportsListResponse:
-    cycles = (await list_periodic_monitoring_cycles()).cycles
+async def list_periodic_monitoring_reports(settings: Settings | None = None) -> PeriodicMonitoringReportsListResponse:
+    cycles = (await list_periodic_monitoring_cycles(settings)).cycles
     reports = [report for cycle in RECENT_CYCLES for report in cycle.reports]
     if cycles:
         reports = [report for cycle in cycles for report in cycle.reports]

@@ -44,6 +44,10 @@ FOUNDATION_SERVERS = [
 ]
 
 
+class ServerPersistenceError(RuntimeError):
+    pass
+
+
 async def list_servers(settings: Settings) -> ServersListResponse:
     database_servers = await _try_database_list_servers(settings)
     servers = database_servers if database_servers is not None else _memory_servers()
@@ -100,6 +104,8 @@ async def create_server(settings: Settings, payload: ServerCreate) -> ServerDeta
     database_server = await _try_database_create_server(settings, payload)
     if database_server is not None:
         return database_server
+    if settings.database_url:
+        raise ServerPersistenceError("Database is configured but the server could not be persisted.")
 
     server_id = _new_memory_server_id(payload.name)
     server = ServerDetail(
@@ -124,6 +130,8 @@ async def update_server(settings: Settings, server_id: str, payload: ServerUpdat
     database_server = await _try_database_update_server(settings, server_id, payload)
     if database_server is not None:
         return database_server
+    if settings.database_url:
+        raise ServerPersistenceError("Database is configured but the server update could not be persisted.")
 
     server = _memory_server(server_id)
     if server is None:
@@ -146,6 +154,8 @@ async def update_server_ssh_access(
         return None
 
     database_ssh = await _try_database_update_ssh_access(settings, server_id, payload)
+    if settings.database_url and database_ssh is None:
+        raise ServerPersistenceError("Database is configured but SSH access could not be persisted.")
     SSH_ACCESS_STORE[server_id] = payload
     return database_ssh if database_ssh is not None else _public_ssh_access(payload)
 
