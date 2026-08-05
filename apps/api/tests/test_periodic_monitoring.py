@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from control_plane_api.core.config import Settings
 from control_plane_api.core.security import hash_password
 from control_plane_api.main import create_app
-from control_plane_api.modules.periodic_monitoring.service import RECENT_CYCLES
+from control_plane_api.modules.periodic_monitoring.service import RECENT_CYCLES, stop_periodic_monitoring_scheduler
 
 
 def make_client() -> TestClient:
@@ -63,6 +63,7 @@ def test_periodic_monitoring_cycle_produces_report_only() -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "completed"
+    assert body["trigger"] == "manual"
     assert body["servers_planned"] == 1
     assert body["servers_checked"] == 1
     assert body["reports_count"] == 1
@@ -88,3 +89,43 @@ def test_periodic_monitoring_lists_created_reports() -> None:
     body = response.json()
     assert len(body["reports"]) >= 1
     assert body["reports"][0]["collection_summary"] == "Baseline metrics collected successfully from foundation fixture."
+
+
+def test_periodic_monitoring_scheduler_start_status_and_stop() -> None:
+    with make_client() as client:
+        token = login(client)
+
+        start_response = client.post(
+            "/api/v1/periodic-monitoring/scheduler/start",
+            json={"interval_seconds": 60},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        assert start_response.status_code == 200
+        start_body = start_response.json()
+        assert start_body["enabled"] is True
+        assert start_body["interval_seconds"] == 60
+        assert start_body["runs_count"] == 1
+
+        status_response = client.get(
+            "/api/v1/periodic-monitoring/scheduler/status",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        assert status_response.status_code == 200
+        assert status_response.json()["enabled"] is True
+
+        stop_response = client.post(
+            "/api/v1/periodic-monitoring/scheduler/stop",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        assert stop_response.status_code == 200
+        assert stop_response.json()["enabled"] is False
+
+    try:
+        import asyncio
+
+        asyncio.run(stop_periodic_monitoring_scheduler())
+    except RuntimeError:
+        pass

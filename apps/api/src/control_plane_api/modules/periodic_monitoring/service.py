@@ -1,4 +1,6 @@
-from datetime import UTC, datetime
+import asyncio
+from contextlib import suppress
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 from control_plane_api.modules.monitoring_profiles.service import get_monitoring_profile
@@ -8,20 +10,29 @@ from control_plane_api.schemas.periodic_monitoring import (
     PeriodicMonitoringCycleReport,
     PeriodicMonitoringCyclesListResponse,
     PeriodicMonitoringReportsListResponse,
+    PeriodicMonitoringSchedulerStatus,
     ServerSubAgentReport,
 )
 
 DEFAULT_PROFILE_IDS = ["profile-linux-baseline"]
 RECENT_CYCLES: list[PeriodicMonitoringCycleReport] = []
+SCHEDULER_TASK: asyncio.Task[None] | None = None
+SCHEDULER_INTERVAL_SECONDS: int | None = None
+SCHEDULER_STARTED_AT: datetime | None = None
+SCHEDULER_LAST_RUN_AT: datetime | None = None
+SCHEDULER_NEXT_RUN_AT: datetime | None = None
+SCHEDULER_RUNS_COUNT = 0
+SCHEDULER_LAST_ERROR: str | None = None
 
 
-def run_periodic_monitoring_cycle() -> PeriodicMonitoringCycleReport:
+def run_periodic_monitoring_cycle(*, trigger: str = "manual") -> PeriodicMonitoringCycleReport:
     started_at = datetime.now(UTC)
     active_servers = [server for server in FOUNDATION_SERVERS if server.status == "active"]
     reports = [_run_server_sub_agent(server_id=server.id, server_name=server.name, started_at=started_at) for server in active_servers]
     completed_at = datetime.now(UTC)
     cycle = PeriodicMonitoringCycleReport(
         cycle_id=f"cycle-{uuid4()}",
+        trigger=trigger,
         status="completed",
         started_at=started_at,
         completed_at=completed_at,
@@ -34,6 +45,75 @@ def run_periodic_monitoring_cycle() -> PeriodicMonitoringCycleReport:
     RECENT_CYCLES.insert(0, cycle)
     del RECENT_CYCLES[10:]
     return cycle
+
+
+async def start_periodic_monitoring_scheduler(interval_seconds: int) -> PeriodicMonitoringSchedulerStatus:
+    global SCHEDULER_INTERVAL_SECONDS
+    global SCHEDULER_LAST_ERROR
+    global SCHEDULER_LAST_RUN_AT
+    global SCHEDULER_NEXT_RUN_AT
+    global SCHEDULER_RUNS_COUNT
+    global SCHEDULER_STARTED_AT
+    global SCHEDULER_TASK
+
+    if SCHEDULER_TASK is not None and not SCHEDULER_TASK.done():
+        return get_periodic_monitoring_scheduler_status()
+
+    SCHEDULER_INTERVAL_SECONDS = interval_seconds
+    SCHEDULER_STARTED_AT = datetime.now(UTC)
+    SCHEDULER_LAST_ERROR = None
+    SCHEDULER_RUNS_COUNT = 0
+    first_cycle = run_periodic_monitoring_cycle(trigger="scheduler")
+    SCHEDULER_LAST_RUN_AT = first_cycle.completed_at
+    SCHEDULER_RUNS_COUNT = 1
+    SCHEDULER_NEXT_RUN_AT = datetime.now(UTC) + timedelta(seconds=interval_seconds)
+    SCHEDULER_TASK = asyncio.create_task(_scheduler_loop(interval_seconds))
+    return get_periodic_monitoring_scheduler_status()
+
+
+async def stop_periodic_monitoring_scheduler() -> PeriodicMonitoringSchedulerStatus:
+    global SCHEDULER_NEXT_RUN_AT
+    global SCHEDULER_TASK
+
+    if SCHEDULER_TASK is not None and not SCHEDULER_TASK.done():
+        SCHEDULER_TASK.cancel()
+        with suppress(asyncio.CancelledError):
+            await SCHEDULER_TASK
+
+    SCHEDULER_TASK = None
+    SCHEDULER_NEXT_RUN_AT = None
+    return get_periodic_monitoring_scheduler_status()
+
+
+def get_periodic_monitoring_scheduler_status() -> PeriodicMonitoringSchedulerStatus:
+    enabled = SCHEDULER_TASK is not None and not SCHEDULER_TASK.done()
+    return PeriodicMonitoringSchedulerStatus(
+        enabled=enabled,
+        interval_seconds=SCHEDULER_INTERVAL_SECONDS if enabled else None,
+        started_at=SCHEDULER_STARTED_AT if enabled else None,
+        last_run_at=SCHEDULER_LAST_RUN_AT,
+        next_run_at=SCHEDULER_NEXT_RUN_AT if enabled else None,
+        runs_count=SCHEDULER_RUNS_COUNT,
+        last_error=SCHEDULER_LAST_ERROR,
+    )
+
+
+async def _scheduler_loop(interval_seconds: int) -> None:
+    global SCHEDULER_LAST_ERROR
+    global SCHEDULER_LAST_RUN_AT
+    global SCHEDULER_NEXT_RUN_AT
+    global SCHEDULER_RUNS_COUNT
+
+    while True:
+        SCHEDULER_NEXT_RUN_AT = datetime.now(UTC) + timedelta(seconds=interval_seconds)
+        await asyncio.sleep(interval_seconds)
+        try:
+            cycle = run_periodic_monitoring_cycle(trigger="scheduler")
+            SCHEDULER_LAST_RUN_AT = cycle.completed_at
+            SCHEDULER_RUNS_COUNT += 1
+            SCHEDULER_LAST_ERROR = None
+        except Exception as exc:  # pragma: no cover - defensive scheduler boundary
+            SCHEDULER_LAST_ERROR = str(exc)
 
 
 def list_periodic_monitoring_cycles() -> PeriodicMonitoringCyclesListResponse:

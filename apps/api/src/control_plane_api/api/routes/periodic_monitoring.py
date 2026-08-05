@@ -2,16 +2,21 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from control_plane_api.api.dependencies import get_current_principal
 from control_plane_api.modules.periodic_monitoring.service import (
+    get_periodic_monitoring_scheduler_status,
     get_latest_periodic_monitoring_cycle,
     list_periodic_monitoring_cycles,
     list_periodic_monitoring_reports,
     run_periodic_monitoring_cycle,
+    start_periodic_monitoring_scheduler,
+    stop_periodic_monitoring_scheduler,
 )
 from control_plane_api.schemas.auth import Principal
 from control_plane_api.schemas.periodic_monitoring import (
     PeriodicMonitoringCycleReport,
     PeriodicMonitoringCyclesListResponse,
     PeriodicMonitoringReportsListResponse,
+    PeriodicMonitoringSchedulerStartRequest,
+    PeriodicMonitoringSchedulerStatus,
 )
 
 router = APIRouter(prefix="/periodic-monitoring", tags=["periodic-monitoring"])
@@ -69,3 +74,28 @@ async def periodic_monitoring_reports(
 ) -> PeriodicMonitoringReportsListResponse:
     require_monitoring_read(principal)
     return list_periodic_monitoring_reports()
+
+
+@router.post("/scheduler/start", response_model=PeriodicMonitoringSchedulerStatus)
+async def start_scheduler(
+    payload: PeriodicMonitoringSchedulerStartRequest,
+    principal: Principal = Depends(get_current_principal),
+) -> PeriodicMonitoringSchedulerStatus:
+    require_monitoring_write(principal)
+    return await start_periodic_monitoring_scheduler(payload.interval_seconds)
+
+
+@router.post("/scheduler/stop", response_model=PeriodicMonitoringSchedulerStatus)
+async def stop_scheduler(
+    principal: Principal = Depends(get_current_principal),
+) -> PeriodicMonitoringSchedulerStatus:
+    require_monitoring_write(principal)
+    return await stop_periodic_monitoring_scheduler()
+
+
+@router.get("/scheduler/status", response_model=PeriodicMonitoringSchedulerStatus)
+async def scheduler_status(
+    principal: Principal = Depends(get_current_principal),
+) -> PeriodicMonitoringSchedulerStatus:
+    require_monitoring_read(principal)
+    return get_periodic_monitoring_scheduler_status()

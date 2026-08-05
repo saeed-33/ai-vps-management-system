@@ -36,6 +36,16 @@ export type PeriodicMonitoringCyclesListResponse = {
   cycles: PeriodicMonitoringCycleReport[];
 };
 
+export type PeriodicMonitoringSchedulerStatus = {
+  enabled: boolean;
+  interval_seconds: number | null;
+  started_at: string | null;
+  last_run_at: string | null;
+  next_run_at: string | null;
+  runs_count: number;
+  last_error: string | null;
+};
+
 async function requestJson<T>(path: string, token: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
     ...init,
@@ -61,4 +71,24 @@ export function startPeriodicMonitoringCycle(token: string) {
 
 export function getPeriodicMonitoringCycles(token: string) {
   return requestJson<PeriodicMonitoringCyclesListResponse>("/api/v1/periodic-monitoring/cycles", token);
+}
+
+export function getPeriodicMonitoringSchedulerStatus(token: string) {
+  return requestJson<PeriodicMonitoringSchedulerStatus>("/api/v1/periodic-monitoring/scheduler/status", token);
+}
+
+export function startPeriodicMonitoringScheduler(token: string, intervalSeconds: number) {
+  return requestJson<PeriodicMonitoringSchedulerStatus>("/api/v1/periodic-monitoring/scheduler/start", token, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({ interval_seconds: intervalSeconds }),
+  });
+}
+
+export function stopPeriodicMonitoringScheduler(token: string) {
+  return requestJson<PeriodicMonitoringSchedulerStatus>("/api/v1/periodic-monitoring/scheduler/stop", token, {
+    method: "POST",
+  });
 }

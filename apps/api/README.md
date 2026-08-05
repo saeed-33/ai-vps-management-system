@@ -4,7 +4,7 @@ FastAPI service for the AI VPS Management System control plane.
 
 ## Current Scope
 
-This is the phase 12 foundation. It provides:
+This is the phase 13 foundation. It provides:
 
 - Application factory.
 - Central settings.
@@ -19,6 +19,7 @@ This is the phase 12 foundation. It provides:
 - Specialist agents foundation endpoints.
 - Allowed tools foundation endpoints.
 - Periodic monitoring report foundation endpoints.
+- Periodic monitoring scheduler foundation endpoints.
 - Smoke tests.
 
 It does not yet provide database-backed CRUD, MCP, or agent integration.
@@ -93,4 +94,7 @@ POST /api/v1/periodic-monitoring/cycles
 GET /api/v1/periodic-monitoring/cycles
 GET /api/v1/periodic-monitoring/cycles/latest
 GET /api/v1/periodic-monitoring/reports
+POST /api/v1/periodic-monitoring/scheduler/start
+POST /api/v1/periodic-monitoring/scheduler/stop
+GET /api/v1/periodic-monitoring/scheduler/status
 ```

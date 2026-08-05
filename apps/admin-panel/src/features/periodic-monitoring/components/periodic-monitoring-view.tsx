@@ -1,16 +1,21 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Activity, Play, RefreshCw } from "lucide-react";
+import { Activity, Play, RefreshCw, Square } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { getStoredAccessToken } from "@/lib/auth-client";
 import {
+  getPeriodicMonitoringSchedulerStatus,
   getPeriodicMonitoringCycles,
   startPeriodicMonitoringCycle,
+  startPeriodicMonitoringScheduler,
+  stopPeriodicMonitoringScheduler,
 } from "@/lib/periodic-monitoring-client";
 
 export function PeriodicMonitoringView() {
   const token = typeof window === "undefined" ? null : getStoredAccessToken();
+  const [intervalSeconds, setIntervalSeconds] = useState(300);
 
   const cyclesQuery = useQuery({
     queryKey: ["periodic-monitoring", "cycles"],
@@ -22,6 +27,27 @@ export function PeriodicMonitoringView() {
     mutationFn: () => startPeriodicMonitoringCycle(token ?? ""),
     onSuccess: () => {
       void cyclesQuery.refetch();
+    },
+  });
+
+  const schedulerQuery = useQuery({
+    queryKey: ["periodic-monitoring", "scheduler"],
+    queryFn: () => getPeriodicMonitoringSchedulerStatus(token ?? ""),
+    enabled: Boolean(token),
+  });
+
+  const startSchedulerMutation = useMutation({
+    mutationFn: () => startPeriodicMonitoringScheduler(token ?? "", intervalSeconds),
+    onSuccess: () => {
+      void schedulerQuery.refetch();
+      void cyclesQuery.refetch();
+    },
+  });
+
+  const stopSchedulerMutation = useMutation({
+    mutationFn: () => stopPeriodicMonitoringScheduler(token ?? ""),
+    onSuccess: () => {
+      void schedulerQuery.refetch();
     },
   });
 
@@ -62,8 +88,8 @@ export function PeriodicMonitoringView() {
         </article>
         <article className="card metric-card">
           <p className="card-title">الحالة</p>
-          <p className="metric-value">{latestCycle?.status ?? "-"}</p>
-          <p className="metric-note">لا يوجد تحليل أو حلول في هذه المرحلة.</p>
+          <p className="metric-value">{schedulerQuery.data?.enabled ? "running" : "stopped"}</p>
+          <p className="metric-note">حالة الجدولة داخل API.</p>
         </article>
       </section>
 
@@ -119,6 +145,79 @@ export function PeriodicMonitoringView() {
         ) : (
           <p className="notice">لا توجد دورة مراقبة بعد.</p>
         )}
+      </section>
+
+      <section className="card wide-card">
+        <div className="toolbar">
+          <div>
+            <h2 className="section-title">جدولة المراقبة الدورية</h2>
+            <p className="metric-note">
+              يشغل scheduler دورة مباشرة عند البدء ثم يعيد تشغيلها حسب interval المحدد داخل عملية API الحالية.
+            </p>
+          </div>
+          <span className={`badge ${schedulerQuery.data?.enabled ? "success" : "neutral"}`}>
+            {schedulerQuery.data?.enabled ? "running" : "stopped"}
+          </span>
+        </div>
+
+        <div className="form-stack">
+          <label className="field">
+            <span>الفاصل الزمني بالثواني</span>
+            <input
+              dir="ltr"
+              min={1}
+              max={86400}
+              type="number"
+              value={intervalSeconds}
+              onChange={(event) => setIntervalSeconds(Number(event.target.value))}
+            />
+          </label>
+          <div className="toolbar">
+            <button
+              className="button primary"
+              type="button"
+              disabled={startSchedulerMutation.isPending || schedulerQuery.data?.enabled}
+              onClick={() => startSchedulerMutation.mutate()}
+            >
+              <Play aria-hidden="true" />
+              تشغيل الجدولة
+            </button>
+            <button
+              className="button"
+              type="button"
+              disabled={stopSchedulerMutation.isPending || !schedulerQuery.data?.enabled}
+              onClick={() => stopSchedulerMutation.mutate()}
+            >
+              <Square aria-hidden="true" />
+              إيقاف
+            </button>
+          </div>
+        </div>
+
+        {startSchedulerMutation.isError || stopSchedulerMutation.isError || schedulerQuery.isError ? (
+          <p className="notice danger">تعذر التحكم بالجدولة. تحقق من token وصلاحية monitoring.write.</p>
+        ) : null}
+
+        <ul className="status-list">
+          <li className="status-row">
+            <div>
+              <strong>runs_count</strong>
+              <span>
+                interval: {schedulerQuery.data?.interval_seconds ?? "-"} / last:{" "}
+                {schedulerQuery.data?.last_run_at
+                  ? new Date(schedulerQuery.data.last_run_at).toLocaleString()
+                  : "-"}
+              </span>
+              <span>
+                next:{" "}
+                {schedulerQuery.data?.next_run_at
+                  ? new Date(schedulerQuery.data.next_run_at).toLocaleString()
+                  : "-"}
+              </span>
+            </div>
+            <span className="badge neutral">{schedulerQuery.data?.runs_count ?? 0}</span>
+          </li>
+        </ul>
       </section>
 
       {latestReport ? (

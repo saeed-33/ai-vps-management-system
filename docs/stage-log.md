@@ -184,6 +184,40 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run build`.
 - النتيجة: lint passed وbuild passed.
 
+## المرحلة الثالثة عشرة: Periodic Monitoring Scheduler Readiness
+
+الحالة: مكتملة.
+
+العمل المطلوب:
+
+- إضافة قدرة جدولة دورات المراقبة الدورية.
+- إضافة endpoints تشغيل وإيقاف وحالة scheduler.
+- تشغيل دورة أولى مباشرة عند تفعيل scheduler.
+- تحديث صفحة المراقبة الدورية للتحكم بالجدولة.
+- إضافة اختبارات.
+- توثيق حدود النطاق.
+
+ما تم إنجازه:
+
+- تحديث `apps/api/src/control_plane_api/schemas/periodic_monitoring.py`.
+- تحديث `apps/api/src/control_plane_api/modules/periodic_monitoring/service.py`.
+- تحديث `apps/api/src/control_plane_api/api/routes/periodic_monitoring.py`.
+- تحديث `apps/api/tests/test_periodic_monitoring.py`.
+- تحديث `apps/admin-panel/src/features/periodic-monitoring/components/periodic-monitoring-view.tsx`.
+- تحديث `apps/admin-panel/src/lib/periodic-monitoring-client.ts`.
+- إنشاء `docs/phase-13/phase-13-plan.md`.
+- إنشاء `docs/phase-13/periodic-monitoring-scheduler-readiness.md`.
+- إنشاء `docs/phase-13/completion-report.md`.
+
+التحقق:
+
+- تم تنفيذ `uv run pytest`.
+- النتيجة: `39 passed`.
+- تم تنفيذ `uv run python -m compileall src scripts`.
+- تم تنفيذ `npm run lint`.
+- تم تنفيذ `npm run build`.
+- النتيجة: lint passed وbuild passed.
+
 ## المرحلة الثانية عشرة: Periodic Monitoring Reports Foundation
 
 الحالة: مكتملة.

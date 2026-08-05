@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class MonitoringMetricSample(BaseModel):
@@ -27,6 +27,7 @@ class ServerSubAgentReport(BaseModel):
 
 class PeriodicMonitoringCycleReport(BaseModel):
     cycle_id: str
+    trigger: str
     status: str
     started_at: datetime
     completed_at: datetime
@@ -43,3 +44,17 @@ class PeriodicMonitoringCyclesListResponse(BaseModel):
 
 class PeriodicMonitoringReportsListResponse(BaseModel):
     reports: list[ServerSubAgentReport]
+
+
+class PeriodicMonitoringSchedulerStartRequest(BaseModel):
+    interval_seconds: int = Field(default=300, ge=1, le=86400)
+
+
+class PeriodicMonitoringSchedulerStatus(BaseModel):
+    enabled: bool
+    interval_seconds: int | None
+    started_at: datetime | None
+    last_run_at: datetime | None
+    next_run_at: datetime | None
+    runs_count: int
+    last_error: str | None
