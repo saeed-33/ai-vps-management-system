@@ -17,11 +17,13 @@ export type ServerSubAgentReport = {
   completed_at: string;
   monitoring_profiles: string[];
   metrics: MonitoringMetricSample[];
+  raw_snapshot: Record<string, unknown>;
   collection_summary: string;
 };
 
 export type PeriodicMonitoringCycleReport = {
   cycle_id: string;
+  trigger: string;
   status: string;
   started_at: string;
   completed_at: string;

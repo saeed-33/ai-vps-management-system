@@ -640,6 +640,34 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run lint`.
 - تم تنفيذ `npm run build`.
 - النتيجة: lint passed وbuild passed.
+## Phase 19: Periodic Monitoring Report Visibility Completion
+
+Status: completed.
+
+Required work:
+
+- Show all periodic monitoring cycles in the admin panel.
+- Show all server reports for each cycle.
+- Show all metrics for each server report.
+- Preserve failed server reports when collection fails.
+- Keep the scope before report analysis.
+
+Completed work:
+
+- Updated `apps/admin-panel/src/features/periodic-monitoring/components/periodic-monitoring-view.tsx`.
+- Updated `apps/admin-panel/src/lib/periodic-monitoring-client.ts`.
+- Updated `apps/agent/src/ai_vps_agent/periodic_monitoring/server_sub_agent.py`.
+- Updated `apps/agent/tests/test_periodic_monitoring_agent.py`.
+- Created `docs/phase-19`.
+
+Verification:
+
+- `uv run --extra dev pytest` in `apps/agent`: `8 passed`.
+- `uv run pytest` in `apps/api`: `47 passed`.
+- `uv run python -m compileall src scripts` in `apps/api`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+
 ## Phase 18: Periodic Monitoring Readiness Completion
 
 Status: completed as a practical foundation.

@@ -50,3 +50,31 @@ def test_hybrid_collector_uses_fixture_without_ssh_access() -> None:
 
     assert len(metrics) == 5
     assert {metric.source_tool for metric in metrics} == {"uptime", "free", "df", "systemctl_status"}
+
+
+class FailingCollector:
+    def collect(self, server: AgentServer, profile_ids: list[str]) -> list[object]:
+        raise RuntimeError("ssh connection failed")
+
+
+def test_periodic_monitoring_agent_records_failed_server_report() -> None:
+    agent = PeriodicMonitoringAgent(collector=FailingCollector())  # type: ignore[arg-type]
+
+    cycle = agent.run_cycle(
+        trigger="manual",
+        servers=[
+            AgentServer(
+                id="srv-1",
+                name="server-one",
+                hostname="server-one.local",
+                status="active",
+                monitoring_profiles=["profile-linux-baseline"],
+            )
+        ],
+    )
+
+    assert cycle.status == "completed"
+    assert cycle.servers_checked == 1
+    assert cycle.reports[0].status == "failed"
+    assert cycle.reports[0].metrics == []
+    assert cycle.reports[0].raw_snapshot["error_type"] == "RuntimeError"
