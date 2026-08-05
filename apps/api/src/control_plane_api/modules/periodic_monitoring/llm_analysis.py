@@ -18,9 +18,9 @@ class LlmAnalysisAdapter(Protocol):
         self,
         *,
         report: ServerSubAgentReport,
-        rule_signals: MonitoringReportAnalysis,
+        collection_context: MonitoringReportAnalysis,
     ) -> MonitoringReportAnalysis:
-        """Create the final report analysis. Rule signals are input only."""
+        """Create the final report analysis from collected evidence and context."""
 
 
 class DisabledLlmAnalysisAdapter:
@@ -28,13 +28,13 @@ class DisabledLlmAnalysisAdapter:
         self,
         *,
         report: ServerSubAgentReport,
-        rule_signals: MonitoringReportAnalysis,
+        collection_context: MonitoringReportAnalysis,
     ) -> MonitoringReportAnalysis:
         return _unavailable_analysis(
             provider="disabled",
             model=None,
-            profiles_evaluated=rule_signals.profiles_evaluated,
-            suggested_specialist_agents=rule_signals.suggested_specialist_agents,
+            profiles_evaluated=collection_context.profiles_evaluated,
+            suggested_specialist_agents=collection_context.suggested_specialist_agents,
             error=None,
         )
 
@@ -49,11 +49,11 @@ class OllamaLlmAnalysisAdapter:
         self,
         *,
         report: ServerSubAgentReport,
-        rule_signals: MonitoringReportAnalysis,
+        collection_context: MonitoringReportAnalysis,
     ) -> MonitoringReportAnalysis:
         payload = {
             "model": self._model,
-            "prompt": _prompt(report, rule_signals),
+            "prompt": _prompt(report, collection_context),
             "stream": False,
             "format": "json",
         }
@@ -77,7 +77,7 @@ class OllamaLlmAnalysisAdapter:
             severity=llm_payload.severity,
             summary=llm_payload.summary,
             findings=llm_payload.findings,
-            profiles_evaluated=rule_signals.profiles_evaluated,
+            profiles_evaluated=collection_context.profiles_evaluated,
             suggested_specialist_agents=llm_payload.suggested_specialist_agents,
             next_actions=llm_payload.next_actions,
             llm_enrichment=enrichment,
@@ -100,18 +100,18 @@ class _LlmAnalysisPayload(BaseModel):
 async def analyze_report_with_llm(
     *,
     report: ServerSubAgentReport,
-    rule_signals: MonitoringReportAnalysis,
+    collection_context: MonitoringReportAnalysis,
     settings: Settings,
 ) -> MonitoringReportAnalysis:
     adapter = _adapter_for(settings)
     try:
-        return await adapter.analyze(report=report, rule_signals=rule_signals)
+        return await adapter.analyze(report=report, collection_context=collection_context)
     except Exception as exc:
         return _unavailable_analysis(
             provider=settings.llm_analysis_provider,
             model=settings.llm_analysis_model,
-            profiles_evaluated=rule_signals.profiles_evaluated,
-            suggested_specialist_agents=rule_signals.suggested_specialist_agents,
+            profiles_evaluated=collection_context.profiles_evaluated,
+            suggested_specialist_agents=collection_context.suggested_specialist_agents,
             error=f"{exc.__class__.__name__}: {exc}",
         )
 
@@ -151,7 +151,7 @@ def _unavailable_analysis(
     )
 
 
-def _prompt(report: ServerSubAgentReport, rule_signals: MonitoringReportAnalysis) -> str:
+def _prompt(report: ServerSubAgentReport, collection_context: MonitoringReportAnalysis) -> str:
     context = {
         "server": {
             "id": report.server_id,
@@ -161,10 +161,10 @@ def _prompt(report: ServerSubAgentReport, rule_signals: MonitoringReportAnalysis
         },
         "metrics": [metric.model_dump() for metric in report.metrics],
         "raw_monitoring_evidence": report.raw_snapshot,
-        "rule_signals_not_final_analysis": rule_signals.model_dump(exclude={"llm_enrichment"}),
+            "non_diagnostic_collection_context": collection_context.model_dump(exclude={"llm_enrichment"}),
         "constraints": [
             "You are the only component allowed to produce the final report analysis.",
-            "Rule signals are evidence only, not final conclusions.",
+            "The collection context is not diagnostic analysis.",
             "Use raw command outputs as primary evidence when they are present.",
             "Mention command failures or missing utilities as monitoring coverage limitations.",
             "Do not propose command execution.",
@@ -175,7 +175,7 @@ def _prompt(report: ServerSubAgentReport, rule_signals: MonitoringReportAnalysis
             "status": "no_issue | suspected_issue | confirmed_issue | needs_human_review",
             "severity": "info | warning | critical",
             "summary": "final concise diagnostic conclusion",
-            "findings": "array of findings with code, severity, title, detail, metric, value, threshold, profile_id, interpretation_note, suggested_specialist_agents",
+            "findings": "array of findings with code, severity, title, detail, metric, value, profile_id, interpretation_note, suggested_specialist_agents",
             "suggested_specialist_agents": "array of agent ids",
             "next_actions": "array of safe review-only next actions",
             "llm_summary": "narrative summary for UI",

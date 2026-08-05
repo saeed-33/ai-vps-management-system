@@ -7,7 +7,7 @@ export type MonitoringProfileSummary = {
   version: number;
   status: string;
   assigned_servers: number;
-  thresholds_count: number;
+  instructions_count: number;
   specialist_agents: string[];
   source: string;
 };
@@ -23,11 +23,35 @@ export type MonitoringProfilesSummaryResponse = {
   by_domain: Record<string, number>;
 };
 
-async function getAuthorizedJson<T>(path: string, token: string): Promise<T> {
+export type MonitoringInstruction = {
+  id: string;
+  title: string;
+  tool_code: string;
+  command: string;
+  purpose: string;
+  parser: string | null;
+  expected_evidence: string[];
+  read_only: boolean;
+};
+
+export type MonitoringProfileCreate = {
+  id: string;
+  name: string;
+  domain: string;
+  status: string;
+  description: string;
+  monitoring_instructions: MonitoringInstruction[];
+  analysis_instructions: string[];
+  specialist_agents: string[];
+};
+
+async function getAuthorizedJson<T>(path: string, token: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    ...init,
     headers: {
       accept: "application/json",
       authorization: `Bearer ${token}`,
+      ...init?.headers,
     },
   });
 
@@ -44,4 +68,14 @@ export function getMonitoringProfiles(token: string) {
 
 export function getMonitoringProfilesSummary(token: string) {
   return getAuthorizedJson<MonitoringProfilesSummaryResponse>("/api/v1/monitoring-profiles/summary", token);
+}
+
+export function createMonitoringProfile(token: string, payload: MonitoringProfileCreate) {
+  return getAuthorizedJson<MonitoringProfileSummary>("/api/v1/monitoring-profiles", token, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
 }

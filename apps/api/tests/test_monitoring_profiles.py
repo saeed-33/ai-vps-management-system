@@ -3,9 +3,11 @@ from fastapi.testclient import TestClient
 from control_plane_api.core.config import Settings
 from control_plane_api.core.security import hash_password
 from control_plane_api.main import create_app
+from control_plane_api.modules.monitoring_profiles.service import MEMORY_PROFILE_STORE
 
 
 def make_client() -> TestClient:
+    MEMORY_PROFILE_STORE.clear()
     app = create_app(
         Settings(
             app_name="Test Control Plane",
@@ -79,8 +81,46 @@ def test_monitoring_profile_detail() -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["domain"] == "system"
-    assert len(body["thresholds"]) == 5
-    assert "Treat thresholds as signals, not final decisions." in body["analysis_guidelines"]
+    assert len(body["monitoring_instructions"]) == 4
+    assert body["monitoring_instructions"][0]["command"] == "uptime"
+    assert "Use raw command evidence first" in body["analysis_instructions"][0]
+
+
+def test_monitoring_profile_create_accepts_execution_instructions() -> None:
+    client = make_client()
+    token = login(client)
+
+    response = client.post(
+        "/api/v1/monitoring-profiles",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "id": "profile-custom-linux",
+            "name": "Custom Linux",
+            "domain": "system",
+            "status": "active",
+            "description": "Custom read-only collection profile.",
+            "monitoring_instructions": [
+                {
+                    "id": "custom-uptime",
+                    "title": "Collect uptime",
+                    "tool_code": "custom_uptime",
+                    "command": "uptime",
+                    "purpose": "Collect load average evidence.",
+                    "parser": "uptime",
+                    "expected_evidence": ["load average"],
+                    "read_only": True,
+                }
+            ],
+            "analysis_instructions": ["Use raw evidence only."],
+            "specialist_agents": [],
+        },
+    )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["id"] == "profile-custom-linux"
+    assert body["instructions_count"] == 1
+    assert body["monitoring_instructions"][0]["command"] == "uptime"
 
 
 def test_monitoring_profile_detail_not_found() -> None:

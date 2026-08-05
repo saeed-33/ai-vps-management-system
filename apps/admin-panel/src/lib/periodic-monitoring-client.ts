@@ -15,7 +15,6 @@ export type MonitoringAnalysisFinding = {
   detail: string;
   metric: string | null;
   value: number | string | boolean | null;
-  threshold: number | string | boolean | null;
   profile_id: string | null;
   interpretation_note: string | null;
   suggested_specialist_agents: string[];

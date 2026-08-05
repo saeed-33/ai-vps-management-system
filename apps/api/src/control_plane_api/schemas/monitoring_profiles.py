@@ -1,18 +1,21 @@
-from pydantic import BaseModel
-
-
-class MonitoringThreshold(BaseModel):
-    metric: str
-    warning: float | None = None
-    critical: float | None = None
-    unit: str
-    interpretation_note: str
+from pydantic import BaseModel, Field
 
 
 class MonitoringTool(BaseModel):
     code: str
     purpose: str
     read_only: bool
+
+
+class MonitoringInstruction(BaseModel):
+    id: str
+    title: str
+    tool_code: str
+    command: str
+    purpose: str
+    parser: str | None = None
+    expected_evidence: list[str] = Field(default_factory=list)
+    read_only: bool = True
 
 
 class MonitoringProfileSummary(BaseModel):
@@ -22,16 +25,27 @@ class MonitoringProfileSummary(BaseModel):
     version: int
     status: str
     assigned_servers: int
-    thresholds_count: int
+    instructions_count: int
     specialist_agents: list[str]
     source: str
 
 
 class MonitoringProfileDetail(MonitoringProfileSummary):
     description: str
-    thresholds: list[MonitoringThreshold]
     tools: list[MonitoringTool]
-    analysis_guidelines: list[str]
+    monitoring_instructions: list[MonitoringInstruction]
+    analysis_instructions: list[str]
+
+
+class MonitoringProfileCreate(BaseModel):
+    id: str
+    name: str
+    domain: str
+    status: str = "draft"
+    description: str
+    monitoring_instructions: list[MonitoringInstruction]
+    analysis_instructions: list[str] = Field(default_factory=list)
+    specialist_agents: list[str] = Field(default_factory=list)
 
 
 class MonitoringProfilesListResponse(BaseModel):

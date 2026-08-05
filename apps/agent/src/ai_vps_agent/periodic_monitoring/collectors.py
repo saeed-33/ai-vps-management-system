@@ -1,11 +1,16 @@
 from typing import Protocol
 from concurrent.futures import ThreadPoolExecutor
 
-from ai_vps_agent.periodic_monitoring.models import AgentMonitoringCollection, AgentMonitoringMetricSample, AgentServer
+from ai_vps_agent.periodic_monitoring.models import (
+    AgentMonitoringCollection,
+    AgentMonitoringInstruction,
+    AgentMonitoringMetricSample,
+    AgentServer,
+)
 from ai_vps_agent.server_access.models import CommandResult
 from ai_vps_agent.server_access.ssh_client import SshCommandClient
 from ai_vps_agent.tools.parsers import parse_baseline_results
-from ai_vps_agent.tools.registry import BASELINE_TOOL_CODES, baseline_command_policy
+from ai_vps_agent.tools.registry import DEFAULT_BASELINE_INSTRUCTIONS, baseline_command_policy
 
 
 class BaselineCollector(Protocol):
@@ -15,6 +20,7 @@ class BaselineCollector(Protocol):
 
 class FixtureBaselineCollector:
     def collect(self, server: AgentServer, profile_ids: list[str]) -> AgentMonitoringCollection:
+        instructions = _instructions_for(server)
         metrics: list[AgentMonitoringMetricSample] = []
         for profile_id in profile_ids:
             domain = "system" if profile_id == "profile-linux-baseline" else "unknown"
@@ -32,7 +38,7 @@ class FixtureBaselineCollector:
                         domain=domain,
                         value=43.2,
                         unit="percent",
-                        source_tool="free",
+                        source_tool="free_m",
                     ),
                     AgentMonitoringMetricSample(
                         metric="load_1m_per_core",
@@ -46,14 +52,14 @@ class FixtureBaselineCollector:
                         domain=domain,
                         value=38.7,
                         unit="percent",
-                        source_tool="df",
+                        source_tool="df_portable",
                     ),
                     AgentMonitoringMetricSample(
                         metric="failed_systemd_units",
                         domain=domain,
                         value=0,
                         unit="count",
-                        source_tool="systemctl_status",
+                        source_tool="systemctl_failed",
                     ),
                 ]
             )
@@ -64,6 +70,7 @@ class FixtureBaselineCollector:
                 "server_id": server.id,
                 "server_name": server.name,
                 "profile_ids": profile_ids,
+                "monitoring_instructions": [instruction.model_dump() for instruction in instructions],
                 "samples": {sample.metric: sample.value for sample in metrics},
                 "command_results": [],
             },
@@ -80,10 +87,12 @@ class SshBaselineCollector:
 async def _collect_over_ssh(server: AgentServer) -> AgentMonitoringCollection:
     if server.ssh is None:
         raise ValueError("SSH access is required for SshBaselineCollector")
-    client = SshCommandClient(server.ssh, baseline_command_policy())
+    instructions = _instructions_for(server)
+    client = SshCommandClient(server.ssh, baseline_command_policy(instructions))
     results: list[CommandResult] = []
-    for tool_code in BASELINE_TOOL_CODES:
-        results.append(await client.run_tool(tool_code))
+    for instruction in instructions:
+        if instruction.read_only:
+            results.append(await client.run_tool(instruction.tool_code))
     metrics = parse_baseline_results(results)
     return AgentMonitoringCollection(
         metrics=metrics,
@@ -92,6 +101,7 @@ async def _collect_over_ssh(server: AgentServer) -> AgentMonitoringCollection:
             "server_id": server.id,
             "server_name": server.name,
             "profile_ids": server.monitoring_profiles,
+            "monitoring_instructions": [instruction.model_dump() for instruction in instructions],
             "samples": {sample.metric: sample.value for sample in metrics},
             "command_results": [result.model_dump() for result in results],
         },
@@ -119,3 +129,7 @@ class HybridBaselineCollector:
         if server.ssh is None:
             return self._fixture.collect(server, profile_ids)
         return self._ssh.collect(server, profile_ids)
+
+
+def _instructions_for(server: AgentServer) -> list[AgentMonitoringInstruction]:
+    return server.monitoring_instructions or DEFAULT_BASELINE_INSTRUCTIONS

@@ -8,6 +8,7 @@ from ai_vps_agent.periodic_monitoring.orchestrator import PeriodicMonitoringAgen
 from ai_vps_agent.server_access.models import SshServerAccess
 
 from control_plane_api.core.config import Settings, get_settings
+from control_plane_api.modules.monitoring_profiles.service import get_monitoring_instructions
 from control_plane_api.modules.servers.service import get_active_agent_servers, get_server_ssh_access_config
 from control_plane_api.modules.periodic_monitoring.analysis import analyze_server_report
 from control_plane_api.modules.periodic_monitoring.analysis_reports import build_analysis_reports
@@ -167,17 +168,23 @@ async def list_periodic_monitoring_analysis_reports(
 
 async def _get_agent_servers(settings: Settings) -> list[AgentServer]:
     servers = await get_active_agent_servers(settings)
-    return [
-        AgentServer(
-            id=server.id,
-            name=server.name,
-            hostname=server.hostname,
-            status=server.status,
-            monitoring_profiles=server.assigned_monitoring_profiles or DEFAULT_PROFILE_IDS,
-            ssh=await _server_ssh_access(server.id, settings),
+    agent_servers = []
+    for server in servers:
+        profile_ids = server.assigned_monitoring_profiles or DEFAULT_PROFILE_IDS
+        agent_servers.append(
+            AgentServer(
+                id=server.id,
+                name=server.name,
+                hostname=server.hostname,
+                status=server.status,
+                monitoring_profiles=profile_ids,
+                monitoring_instructions=[
+                    instruction.model_dump() for instruction in await get_monitoring_instructions(profile_ids, settings)
+                ],
+                ssh=await _server_ssh_access(server.id, settings),
+            )
         )
-        for server in servers
-    ]
+    return agent_servers
 
 
 def _to_api_cycle(agent_cycle: AgentPeriodicMonitoringCycleReport) -> PeriodicMonitoringCycleReport:
@@ -187,10 +194,10 @@ def _to_api_cycle(agent_cycle: AgentPeriodicMonitoringCycleReport) -> PeriodicMo
 async def _with_analysis(cycle: PeriodicMonitoringCycleReport, settings: Settings) -> PeriodicMonitoringCycleReport:
     reports = []
     for report in cycle.reports:
-        rule_signals = analyze_server_report(report)
+        collection_context = analyze_server_report(report)
         llm_analysis = await analyze_report_with_llm(
             report=report,
-            rule_signals=rule_signals,
+            collection_context=collection_context,
             settings=settings,
         )
         reports.append(report.model_copy(update={"analysis": llm_analysis}))

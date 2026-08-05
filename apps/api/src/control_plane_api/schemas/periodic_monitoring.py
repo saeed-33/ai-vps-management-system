@@ -19,7 +19,6 @@ class MonitoringAnalysisFinding(BaseModel):
     detail: str
     metric: str | None = None
     value: float | str | bool | None = None
-    threshold: float | str | bool | None = None
     profile_id: str | None = None
     interpretation_note: str | None = None
     suggested_specialist_agents: list[str] = Field(default_factory=list)

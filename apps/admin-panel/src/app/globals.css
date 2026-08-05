@@ -865,6 +865,22 @@ textarea {
   padding: 8px 10px;
 }
 
+.field textarea {
+  width: 100%;
+  min-height: 260px;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--foreground);
+  padding: 10px 12px;
+  font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+.json-textarea {
+  direction: ltr;
+}
+
 .field select {
   min-height: 40px;
   width: 100%;

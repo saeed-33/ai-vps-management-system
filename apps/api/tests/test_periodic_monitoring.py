@@ -99,7 +99,7 @@ def test_periodic_monitoring_cycle_produces_analyzed_report() -> None:
     assert report["analysis"]["llm_enrichment"]["status"] == "skipped"
 
 
-def test_periodic_monitoring_analysis_flags_critical_metrics() -> None:
+def test_periodic_monitoring_analysis_does_not_emit_rule_findings() -> None:
     report = ServerSubAgentReport(
         sub_agent_id="server-sub-agent-srv-1",
         server_id="srv-1",
@@ -124,13 +124,11 @@ def test_periodic_monitoring_analysis_flags_critical_metrics() -> None:
 
     analysis = analyze_server_report(report)
 
-    assert analysis.status == "confirmed_issue"
-    assert analysis.severity == "critical"
+    assert analysis.status == "not_analyzed"
+    assert analysis.severity == "info"
     assert analysis.profiles_evaluated == ["profile-linux-baseline"]
-    assert analysis.findings[0].code == "profile-linux-baseline_memory_usage_percent_critical"
-    assert analysis.findings[0].profile_id == "profile-linux-baseline"
-    assert analysis.findings[0].suggested_specialist_agents == ["cpu-memory-specialist", "storage-specialist"]
-    assert analysis.suggested_specialist_agents == ["cpu-memory-specialist", "storage-specialist"]
+    assert analysis.findings == []
+    assert analysis.suggested_specialist_agents == []
 
 
 def test_periodic_monitoring_analysis_records_profile_coverage_gap() -> None:
@@ -149,10 +147,10 @@ def test_periodic_monitoring_analysis_records_profile_coverage_gap() -> None:
 
     analysis = analyze_server_report(report)
 
-    assert analysis.status == "no_issue"
+    assert analysis.status == "not_analyzed"
     assert analysis.severity == "info"
     assert analysis.profiles_evaluated == ["profile-nginx-health"]
-    assert analysis.findings[0].code == "profile-nginx-health_coverage_gap"
+    assert analysis.findings == []
 
 
 @pytest.mark.anyio
@@ -169,11 +167,11 @@ async def test_llm_analysis_failure_does_not_emit_rule_based_final_analysis() ->
         raw_snapshot={},
         collection_summary="Baseline metrics collected successfully by periodic monitoring agent.",
     )
-    rule_signals = analyze_server_report(report)
+    collection_context = analyze_server_report(report)
 
     analysis = await analyze_report_with_llm(
         report=report,
-        rule_signals=rule_signals,
+        collection_context=collection_context,
         settings=Settings(
             app_env="test",
             auth_secret_key="test-secret",

@@ -1048,3 +1048,34 @@ Verification:
 - `uv run python -m compileall src scripts` in `apps/api`: passed.
 - `npm run lint` in `apps/admin-panel`: passed.
 - `npm run build` in `apps/admin-panel`: passed.
+## Phase 32: Instruction-Driven Monitoring Profiles
+
+Status: completed.
+
+Required work:
+
+- Remove threshold-based monitoring profile design from active code.
+- Make monitoring profiles define read-only execution instructions.
+- Let the user define periodic monitoring instructions from the admin panel.
+- Use an agent orchestration library instead of a hand-written orchestration loop.
+- Keep final report analysis LLM-only.
+
+Completed work:
+
+- Replaced `thresholds` with `monitoring_instructions`.
+- Replaced `thresholds_count` with `instructions_count`.
+- Added `POST /api/v1/monitoring-profiles`.
+- Persisted custom profile definitions in `monitoring_profile_versions.definition`.
+- Passed assigned profile instructions into the periodic monitoring agent.
+- Built SSH command policy from profile instructions.
+- Added LangGraph and used it in `PeriodicMonitoringAgent`.
+- Added a tabbed admin page for profile list and instruction definition.
+- Created `docs/phase-32`.
+
+Verification:
+
+- `uv run --extra dev pytest` in `apps/agent`: passed, 8 tests.
+- `uv run pytest` in `apps/api`: passed, 53 tests.
+- `uv run python -m compileall src scripts` in `apps/api`: passed.
+- `npm run lint` in `apps/admin-panel`: passed.
+- `npm run build` in `apps/admin-panel`: passed.

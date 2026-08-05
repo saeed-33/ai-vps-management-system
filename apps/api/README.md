@@ -21,10 +21,11 @@ This is the phase 13 foundation. It provides:
 - Periodic monitoring report foundation endpoints.
 - Periodic monitoring scheduler foundation endpoints.
 - Integration with the local `ai-vps-agent` package for report collection.
+- Instruction-driven monitoring profiles for periodic collection.
 - Optional PostgreSQL persistence for periodic monitoring reports.
 - Smoke tests.
 
-It does not yet provide database-backed CRUD, MCP, or agent integration.
+It does not yet provide MCP, specialist-agent execution, solution execution, or sandbox remediation.
 
 ## Install
 
@@ -70,7 +71,7 @@ Use `BOOTSTRAP_ADMIN_EMAIL` and the original password used to generate the hash 
 
 ## LLM-Only Periodic Report Analysis
 
-Periodic monitoring report analysis is produced by LLM only. Rule-based threshold checks are used as internal signals for the LLM prompt, but they are not emitted as the final report analysis.
+Periodic monitoring report analysis is produced by LLM only. Monitoring profiles define evidence collection instructions and analysis guidance.
 
 To produce final analysis reports locally, run Ollama and set:
 
@@ -103,6 +104,7 @@ GET /api/v1/servers/summary
 GET /api/v1/servers/{server_id}
 PUT /api/v1/servers/{server_id}/ssh-access
 GET /api/v1/monitoring-profiles
+POST /api/v1/monitoring-profiles
 GET /api/v1/monitoring-profiles/summary
 GET /api/v1/monitoring-profiles/{profile_id}
 GET /api/v1/specialist-agents

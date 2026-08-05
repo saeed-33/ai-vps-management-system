@@ -49,8 +49,9 @@ def test_hybrid_collector_uses_fixture_without_ssh_access() -> None:
     collection = collector.collect(server, server.monitoring_profiles)
 
     assert len(collection.metrics) == 5
-    assert {metric.source_tool for metric in collection.metrics} == {"uptime", "free", "df", "systemctl_status"}
+    assert {metric.source_tool for metric in collection.metrics} == {"uptime", "free_m", "df_portable", "systemctl_failed"}
     assert collection.raw_snapshot["collector"] == "FixtureBaselineCollector"
+    assert len(collection.raw_snapshot["monitoring_instructions"]) == 4
     assert collection.raw_snapshot["command_results"] == []
 
 

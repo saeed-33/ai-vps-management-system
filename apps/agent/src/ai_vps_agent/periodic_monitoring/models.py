@@ -12,7 +12,19 @@ class AgentServer(BaseModel):
     hostname: str
     status: str
     monitoring_profiles: list[str]
+    monitoring_instructions: list["AgentMonitoringInstruction"] = []
     ssh: SshServerAccess | None = None
+
+
+class AgentMonitoringInstruction(BaseModel):
+    id: str
+    title: str
+    tool_code: str
+    command: str
+    purpose: str
+    parser: str | None = None
+    expected_evidence: list[str] = []
+    read_only: bool = True
 
 
 class AgentMonitoringMetricSample(BaseModel):
