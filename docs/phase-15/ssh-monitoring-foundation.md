@@ -34,10 +34,12 @@ PeriodicMonitoringAgent
 
 ## الوضع الحالي
 
-- `FixtureBaselineCollector` ما زال الافتراضي.
+- `HybridBaselineCollector` هو collector المستخدم من الـ API.
+- إذا لم يكن للسيرفر إعدادات SSH، يستخدم `FixtureBaselineCollector`.
+- إذا كان للسيرفر إعدادات SSH، يستخدم `SshBaselineCollector`.
 - `SshBaselineCollector` موجود وجاهز للاستخدام البرمجي.
-- لوحة الإدارة لا تمرر credentials بعد.
-- لا يوجد تشغيل SSH فعلي من الواجهة حتى يتم بناء إدارة credentials.
+- إعدادات SSH للـ foundation server تقرأ مؤقتا من متغيرات البيئة.
+- لوحة الإدارة لا تدير credentials بعد.
 
 ## أدوات baseline
 
@@ -52,3 +54,14 @@ PeriodicMonitoringAgent
 - لا يوجد secrets manager.
 - لا يوجد SSH integration test بسيرفر حقيقي.
 - لا يوجد تنفيذ أوامر mutating.
+
+## إعدادات التطوير المؤقتة
+
+```env
+FOUNDATION_SERVER_SSH_ENABLED=false
+FOUNDATION_SERVER_SSH_HOST=
+FOUNDATION_SERVER_SSH_PORT=22
+FOUNDATION_SERVER_SSH_USERNAME=
+FOUNDATION_SERVER_SSH_PRIVATE_KEY_PATH=
+FOUNDATION_SERVER_SSH_PASSWORD=
+```

@@ -1,4 +1,5 @@
 from typing import Protocol
+from concurrent.futures import ThreadPoolExecutor
 
 from ai_vps_agent.periodic_monitoring.models import AgentMonitoringMetricSample, AgentServer
 from ai_vps_agent.server_access.ssh_client import SshCommandClient
@@ -78,4 +79,21 @@ async def _collect_over_ssh(server: AgentServer) -> list[AgentMonitoringMetricSa
 def _run_async_collect(server: AgentServer) -> list[AgentMonitoringMetricSample]:
     import asyncio
 
-    return asyncio.run(_collect_over_ssh(server))
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(_collect_over_ssh(server))
+
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        return executor.submit(lambda: asyncio.run(_collect_over_ssh(server))).result()
+
+
+class HybridBaselineCollector:
+    def __init__(self) -> None:
+        self._fixture = FixtureBaselineCollector()
+        self._ssh = SshBaselineCollector()
+
+    def collect(self, server: AgentServer, profile_ids: list[str]) -> list[AgentMonitoringMetricSample]:
+        if server.ssh is None:
+            return self._fixture.collect(server, profile_ids)
+        return self._ssh.collect(server, profile_ids)

@@ -3,8 +3,11 @@ from contextlib import suppress
 from datetime import UTC, datetime, timedelta
 
 from ai_vps_agent.periodic_monitoring import AgentPeriodicMonitoringCycleReport, AgentServer
+from ai_vps_agent.periodic_monitoring.collectors import HybridBaselineCollector
 from ai_vps_agent.periodic_monitoring.orchestrator import PeriodicMonitoringAgent
+from ai_vps_agent.server_access.models import SshServerAccess
 
+from control_plane_api.core.config import get_settings
 from control_plane_api.modules.servers.service import FOUNDATION_SERVERS
 from control_plane_api.schemas.periodic_monitoring import (
     PeriodicMonitoringCycleReport,
@@ -15,7 +18,7 @@ from control_plane_api.schemas.periodic_monitoring import (
 
 DEFAULT_PROFILE_IDS = ["profile-linux-baseline"]
 RECENT_CYCLES: list[PeriodicMonitoringCycleReport] = []
-MONITORING_AGENT = PeriodicMonitoringAgent()
+MONITORING_AGENT = PeriodicMonitoringAgent(collector=HybridBaselineCollector())
 SCHEDULER_TASK: asyncio.Task[None] | None = None
 SCHEDULER_INTERVAL_SECONDS: int | None = None
 SCHEDULER_STARTED_AT: datetime | None = None
@@ -115,6 +118,7 @@ def list_periodic_monitoring_reports() -> PeriodicMonitoringReportsListResponse:
 
 
 def _get_agent_servers() -> list[AgentServer]:
+    settings = get_settings()
     return [
         AgentServer(
             id=server.id,
@@ -122,6 +126,7 @@ def _get_agent_servers() -> list[AgentServer]:
             hostname=server.hostname,
             status=server.status,
             monitoring_profiles=server.assigned_monitoring_profiles or DEFAULT_PROFILE_IDS,
+            ssh=_foundation_ssh_access(server.id, settings),
         )
         for server in FOUNDATION_SERVERS
     ]
@@ -129,3 +134,21 @@ def _get_agent_servers() -> list[AgentServer]:
 
 def _to_api_cycle(agent_cycle: AgentPeriodicMonitoringCycleReport) -> PeriodicMonitoringCycleReport:
     return PeriodicMonitoringCycleReport.model_validate(agent_cycle.model_dump())
+
+
+def _foundation_ssh_access(server_id: str, settings: object) -> SshServerAccess | None:
+    if server_id != "srv-foundation-001":
+        return None
+    if not getattr(settings, "foundation_server_ssh_enabled"):
+        return None
+    host = str(getattr(settings, "foundation_server_ssh_host"))
+    username = str(getattr(settings, "foundation_server_ssh_username"))
+    if not host or not username:
+        return None
+    return SshServerAccess(
+        host=host,
+        port=int(getattr(settings, "foundation_server_ssh_port")),
+        username=username,
+        private_key_path=getattr(settings, "foundation_server_ssh_private_key_path"),
+        password=getattr(settings, "foundation_server_ssh_password"),
+    )

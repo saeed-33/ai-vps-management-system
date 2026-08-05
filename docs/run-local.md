@@ -213,6 +213,19 @@ uv run --extra dev pytest
 
 ملاحظة: حزمة الوكيل تحتوي الآن أساس SSH باستخدام `asyncssh`، لكن الواجهة لا تشغل SSH فعليا بعد. التشغيل الحقيقي يحتاج ربط credentials وإدارة السيرفرات في مرحلة لاحقة.
 
+لتجربة SSH مؤقتا مع سيرفر foundation واحد، عدل `apps/api/.env`:
+
+```env
+FOUNDATION_SERVER_SSH_ENABLED=true
+FOUNDATION_SERVER_SSH_HOST=your.server.ip
+FOUNDATION_SERVER_SSH_PORT=22
+FOUNDATION_SERVER_SSH_USERNAME=your_user
+FOUNDATION_SERVER_SSH_PRIVATE_KEY_PATH=C:\path\to\id_rsa
+FOUNDATION_SERVER_SSH_PASSWORD=
+```
+
+ثم أعد تشغيل الـ API. إذا بقي `FOUNDATION_SERVER_SSH_ENABLED=false` يستخدم الوكيل fixture collector.
+
 اختبار Backend API:
 
 ```powershell

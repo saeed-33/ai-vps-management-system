@@ -13,6 +13,8 @@
 - إضافة baseline tool registry.
 - إضافة parsers لمخرجات أدوات baseline.
 - إضافة `SshBaselineCollector`.
+- إضافة `HybridBaselineCollector` لاختيار SSH عند توفر الإعدادات والرجوع إلى fixture عند غيابها.
+- إضافة إعدادات SSH مؤقتة للـ foundation server عبر `.env`.
 - إضافة اختبارات للأمان والـ parsers ونموذج SSH.
 
 ## الملفات الرئيسية
@@ -30,12 +32,13 @@
 ## ملاحظات
 
 - لا تزال الواجهة تستخدم fixture collector افتراضيا.
-- تشغيل SSH الفعلي يحتاج مرحلة credentials وربط السيرفرات.
+- يمكن تفعيل SSH مؤقتا عبر `.env` للـ foundation server.
+- إدارة credentials من لوحة الإدارة ما زالت مرحلة لاحقة.
 - لا يوجد تحليل أو حلول أو تشغيل وكلاء متخصصين.
 
 ## التحقق
 
-- `uv run --extra dev pytest` داخل `apps/agent`: نجح، `6 passed`.
+- `uv run --extra dev pytest` داخل `apps/agent`: نجح، `7 passed`.
 - `uv run pytest` داخل `apps/api`: نجح، `39 passed`.
 - `uv run python -m compileall src` داخل `apps/agent`: نجح.
 - `uv run python -m compileall src scripts` داخل `apps/api`: نجح.

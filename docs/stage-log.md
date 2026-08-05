@@ -246,6 +246,8 @@ https://github.com/saeed-33/ai-vps-management-system
 - إنشاء `apps/agent/src/ai_vps_agent/tools/registry.py`.
 - إنشاء `apps/agent/src/ai_vps_agent/tools/parsers.py`.
 - تحديث `apps/agent/src/ai_vps_agent/periodic_monitoring/collectors.py`.
+- تحديث `apps/api/src/control_plane_api/core/config.py`.
+- تحديث `.env.example`.
 - إنشاء `apps/agent/tests/test_command_policy.py`.
 - إنشاء `apps/agent/tests/test_baseline_parsers.py`.
 - إنشاء `apps/agent/tests/test_ssh_models.py`.
@@ -256,7 +258,7 @@ https://github.com/saeed-33/ai-vps-management-system
 التحقق:
 
 - تم تنفيذ `uv run --extra dev pytest` داخل `apps/agent`.
-- النتيجة: `6 passed`.
+- النتيجة: `7 passed`.
 - تم تنفيذ `uv run pytest` داخل `apps/api`.
 - النتيجة: `39 passed`.
 - تم تنفيذ compileall للوكيل والـ API.
