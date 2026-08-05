@@ -211,6 +211,8 @@ cd E:\AI_VPS_Mamgment\ai-vps-management-system\apps\agent
 uv run --extra dev pytest
 ```
 
+ملاحظة: حزمة الوكيل تحتوي الآن أساس SSH باستخدام `asyncssh`، لكن الواجهة لا تشغل SSH فعليا بعد. التشغيل الحقيقي يحتاج ربط credentials وإدارة السيرفرات في مرحلة لاحقة.
+
 اختبار Backend API:
 
 ```powershell

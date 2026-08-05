@@ -5,6 +5,7 @@ description = "Agent runtime foundation for periodic VPS monitoring reports"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "asyncssh>=2.14.0,<3.0.0",
     "pydantic>=2.10.0,<3.0.0",
 ]
 

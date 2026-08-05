@@ -2,7 +2,8 @@ import asyncio
 from contextlib import suppress
 from datetime import UTC, datetime, timedelta
 
-from ai_vps_agent.periodic_monitoring import AgentPeriodicMonitoringCycleReport, AgentServer, PeriodicMonitoringAgent
+from ai_vps_agent.periodic_monitoring import AgentPeriodicMonitoringCycleReport, AgentServer
+from ai_vps_agent.periodic_monitoring.orchestrator import PeriodicMonitoringAgent
 
 from control_plane_api.modules.servers.service import FOUNDATION_SERVERS
 from control_plane_api.schemas.periodic_monitoring import (

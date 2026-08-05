@@ -3,6 +3,8 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from ai_vps_agent.server_access.models import SshServerAccess
+
 
 class AgentServer(BaseModel):
     id: str
@@ -10,6 +12,7 @@ class AgentServer(BaseModel):
     hostname: str
     status: str
     monitoring_profiles: list[str]
+    ssh: SshServerAccess | None = None
 
 
 class AgentMonitoringMetricSample(BaseModel):

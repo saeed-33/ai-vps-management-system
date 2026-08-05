@@ -1,4 +1,5 @@
-from ai_vps_agent.periodic_monitoring import AgentServer, PeriodicMonitoringAgent
+from ai_vps_agent.periodic_monitoring import AgentServer
+from ai_vps_agent.periodic_monitoring.orchestrator import PeriodicMonitoringAgent
 
 
 def test_periodic_monitoring_agent_creates_report_per_active_server() -> None:

@@ -1,6 +1,9 @@
 from typing import Protocol
 
 from ai_vps_agent.periodic_monitoring.models import AgentMonitoringMetricSample, AgentServer
+from ai_vps_agent.server_access.ssh_client import SshCommandClient
+from ai_vps_agent.tools.parsers import parse_baseline_results
+from ai_vps_agent.tools.registry import BASELINE_TOOL_CODES, baseline_command_policy
 
 
 class BaselineCollector(Protocol):
@@ -53,3 +56,26 @@ class FixtureBaselineCollector:
                 ]
             )
         return metrics
+
+
+class SshBaselineCollector:
+    def collect(self, server: AgentServer, profile_ids: list[str]) -> list[AgentMonitoringMetricSample]:
+        if server.ssh is None:
+            raise ValueError("SSH access is required for SshBaselineCollector")
+        return _run_async_collect(server)
+
+
+async def _collect_over_ssh(server: AgentServer) -> list[AgentMonitoringMetricSample]:
+    if server.ssh is None:
+        raise ValueError("SSH access is required for SshBaselineCollector")
+    client = SshCommandClient(server.ssh, baseline_command_policy())
+    results = []
+    for tool_code in BASELINE_TOOL_CODES:
+        results.append(await client.run_tool(tool_code))
+    return parse_baseline_results(results)
+
+
+def _run_async_collect(server: AgentServer) -> list[AgentMonitoringMetricSample]:
+    import asyncio
+
+    return asyncio.run(_collect_over_ssh(server))
