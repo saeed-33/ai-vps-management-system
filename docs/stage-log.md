@@ -184,6 +184,41 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run build`.
 - النتيجة: lint passed وbuild passed.
 
+## المرحلة السابعة: Users & Roles Management Foundation
+
+الحالة: مكتملة.
+
+العمل المطلوب:
+
+- إضافة Users API foundation.
+- إضافة Roles summary endpoint.
+- حماية endpoints بالـ bearer token.
+- إضافة صفحة المستخدمين في لوحة الإدارة.
+- إضافة users client.
+- إضافة اختبارات.
+- توثيق المرحلة.
+
+ما تم إنجازه:
+
+- إنشاء `apps/api/src/control_plane_api/schemas/users.py`.
+- إنشاء `apps/api/src/control_plane_api/modules/users/service.py`.
+- إنشاء `apps/api/src/control_plane_api/api/routes/users.py`.
+- إنشاء `apps/api/tests/test_users.py`.
+- إنشاء `apps/admin-panel/src/app/users/page.tsx`.
+- إنشاء `apps/admin-panel/src/features/users/components/users-view.tsx`.
+- إنشاء `apps/admin-panel/src/lib/users-client.ts`.
+- إنشاء `docs/phase-7/phase-7-plan.md`.
+- إنشاء `docs/phase-7/users-roles-foundation.md`.
+- إنشاء `docs/phase-7/completion-report.md`.
+
+التحقق:
+
+- تم تنفيذ `uv run pytest`.
+- النتيجة: `14 passed`.
+- تم تنفيذ `npm run lint`.
+- تم تنفيذ `npm run build`.
+- النتيجة: lint passed وbuild passed.
+
 ## المرحلة السادسة: Auth & RBAC Foundation
 
 الحالة: مكتملة.

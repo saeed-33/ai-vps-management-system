@@ -39,7 +39,7 @@ const navigationGroups = [
   {
     title: "النظام",
     items: [
-      { label: "المستخدمون", href: "#users", icon: Users },
+      { label: "المستخدمون", href: "/users", icon: Users },
       { label: "الوثائق", href: "#documents", icon: Database },
       { label: "المحادثة", href: "#chat", icon: MessageSquare },
       { label: "تسجيل الدخول", href: "/login", icon: LogIn },

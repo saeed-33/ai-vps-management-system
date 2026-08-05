@@ -4,7 +4,7 @@
 
 ## الحالة الحالية
 
-المشروع أنهى المرحلة السادسة: Auth & RBAC Foundation.
+المشروع أنهى المرحلة السابعة: Users & Roles Management Foundation.
 
 ## القرارات الأساسية
 
@@ -47,6 +47,7 @@ tests/
 - `docs/phase-4/`: وثائق أساس Backend API / Control Plane.
 - `docs/phase-5/`: وثائق أساس لوحة الإدارة.
 - `docs/phase-6/`: وثائق أساس المصادقة والصلاحيات.
+- `docs/phase-7/`: وثائق أساس إدارة المستخدمين والأدوار.
 - `docs/architecture-decisions/`: قرارات معمارية موثقة للبنية.
 - `docs/stage-log.md`: سجل المراحل وما تم إنجازه.
 

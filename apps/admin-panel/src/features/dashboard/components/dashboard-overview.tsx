@@ -1,4 +1,4 @@
-import { Activity, Bot, FileWarning, Server } from "lucide-react";
+import { Activity, FileWarning, Server, UserRound } from "lucide-react";
 
 const metrics = [
   {
@@ -6,6 +6,12 @@ const metrics = [
     value: "0",
     note: "جاهزة للربط بعد بناء API modules",
     icon: Server,
+  },
+  {
+    label: "المستخدمون",
+    value: "1",
+    note: "مستخدم bootstrap الحالي إلى حين ربط قاعدة البيانات",
+    icon: UserRound,
   },
   {
     label: "دورات المراقبة",
@@ -18,12 +24,6 @@ const metrics = [
     value: "0",
     note: "سيتم ربطها بجدول issues",
     icon: FileWarning,
-  },
-  {
-    label: "وكلاء متخصصون",
-    value: "0",
-    note: "سيتم إدارتهم من لوحة الإدارة",
-    icon: Bot,
   },
 ];
 

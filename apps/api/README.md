@@ -56,4 +56,7 @@ GET /api/v1/meta
 POST /api/v1/auth/token
 GET /api/v1/auth/me
 GET /api/v1/auth/rbac
+GET /api/v1/users
+GET /api/v1/users/me
+GET /api/v1/users/roles
 ```
