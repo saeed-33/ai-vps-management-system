@@ -640,6 +640,29 @@ https://github.com/saeed-33/ai-vps-management-system
 - تم تنفيذ `npm run lint`.
 - تم تنفيذ `npm run build`.
 - النتيجة: lint passed وbuild passed.
+## Phase 23: Periodic Monitoring UX Improvement
+
+Status: completed.
+
+Required work:
+
+- Improve cycle selection.
+- Improve scheduler status and controls.
+- Display reports as server cards.
+- Display metrics as compact metric cards.
+- Highlight failed reports.
+
+Completed work:
+
+- Rebuilt `apps/admin-panel/src/features/periodic-monitoring/components/periodic-monitoring-view.tsx`.
+- Updated `apps/admin-panel/src/app/globals.css`.
+- Created `docs/phase-23`.
+
+Verification:
+
+- `npm run lint`: passed.
+- `npm run build`: passed.
+
 ## Phase 22: Periodic Monitoring Server UUID Persistence Fix
 
 Status: completed.
