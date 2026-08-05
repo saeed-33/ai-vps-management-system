@@ -33,7 +33,7 @@ def test_periodic_monitoring_agent_creates_report_per_active_server() -> None:
     assert cycle.reports_count == 1
     assert cycle.reports[0].sub_agent_id == "server-sub-agent-srv-1"
     assert len(cycle.reports[0].metrics) == 5
-    assert "No issue analysis" in cycle.scope_note
+    assert "Control plane analysis" in cycle.scope_note
 
 
 def test_hybrid_collector_uses_fixture_without_ssh_access() -> None:

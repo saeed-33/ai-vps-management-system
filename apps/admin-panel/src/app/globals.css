@@ -438,6 +438,56 @@ textarea {
   background: #fff8f8;
 }
 
+.analysis-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 12px;
+}
+
+.analysis-summary strong {
+  display: block;
+  font-size: 13px;
+}
+
+.analysis-summary p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.finding-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.finding-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 10px;
+}
+
+.finding-list strong {
+  display: block;
+  font-size: 13px;
+}
+
+.finding-list p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .server-report-header {
   display: flex;
   align-items: flex-start;

@@ -28,5 +28,5 @@ class PeriodicMonitoringAgent:
             servers_checked=len(reports),
             reports_count=len(reports),
             reports=reports,
-            scope_note="Periodic monitoring agent report collection only. No issue analysis, specialist agents, solutions, or execution.",
+            scope_note="Periodic monitoring collection completed. Control plane analysis is applied after collection. No specialist agents, solutions, or execution.",
         )

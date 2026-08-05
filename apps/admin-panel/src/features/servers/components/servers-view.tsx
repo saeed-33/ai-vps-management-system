@@ -20,7 +20,7 @@ const DEFAULT_PROFILE = "profile-linux-baseline";
 
 export function ServersView() {
   const token = typeof window === "undefined" ? null : getStoredAccessToken();
-  const [selectedServerId, setSelectedServerId] = useState("srv-foundation-001");
+  const [selectedServerId, setSelectedServerId] = useState("");
   const [newServerName, setNewServerName] = useState("");
   const [newServerHostname, setNewServerHostname] = useState("");
   const [newServerIp, setNewServerIp] = useState("");
@@ -55,6 +55,15 @@ export function ServersView() {
 
   const selectedServer = selectedServerQuery.data;
   const servers = useMemo(() => serversQuery.data?.servers ?? [], [serversQuery.data?.servers]);
+
+  useEffect(() => {
+    if (servers.length === 0) {
+      return;
+    }
+    if (!selectedServerId || !servers.some((server) => server.id === selectedServerId)) {
+      setSelectedServerId(servers[0].id);
+    }
+  }, [selectedServerId, servers]);
 
   useEffect(() => {
     if (!selectedServer) {
@@ -153,7 +162,7 @@ export function ServersView() {
       <section className="grid" aria-label="Servers summary">
         <MetricCard title="الإجمالي" value={summaryQuery.data?.total ?? "-"} note="كل السيرفرات المسجلة." />
         <MetricCard title="نشطة" value={summaryQuery.data?.active ?? "-"} note="تدخل في المراقبة الدورية." />
-        <MetricCard title="صيانة" value={summaryQuery.data?.maintenance ?? "-"} note="مستثناة مؤقتا من المراقبة." />
+        <MetricCard title="صيانة" value={summaryQuery.data?.maintenance ?? "-"} note="خارج المراقبة أثناء الصيانة." />
         <MetricCard title="معطلة" value={summaryQuery.data?.disabled ?? "-"} note="لا يستخدمها الوكيل." />
       </section>
 
@@ -272,7 +281,7 @@ export function ServersView() {
                 <span>{server.monitoring_status}</span>
               </div>
               <div className="row-actions">
-                <span className={`badge ${server.source === "database" ? "success" : "warning"}`}>{server.source}</span>
+                <span className={`badge ${persistenceBadge(server.source)}`}>{persistenceLabel(server.source)}</span>
                 <button className={selectedServerId === server.id ? "button primary" : "button"} type="button" onClick={() => selectServer(server)}>
                   {selectedServerId === server.id ? "محدد" : "اختيار"}
                 </button>
@@ -383,7 +392,7 @@ function DatabaseStatus({ servers }: { servers: ServerSummary[] }) {
   return (
     <span className={`badge ${hasMemoryFallback ? "warning" : "success"}`}>
       <Database aria-hidden="true" />
-      {hasMemoryFallback ? "حفظ مؤقت موجود" : "database"}
+      {hasMemoryFallback ? "تحقق من الحفظ" : "محفوظ"}
     </span>
   );
 }
@@ -396,7 +405,7 @@ function SelectedServerSummary({ server }: { server: ServerDetail }) {
           <strong>{server.name}</strong>
           <span dir="ltr">{server.hostname}</span>
           <span>
-            {server.environment} / {server.status} / source: {server.source}
+            {server.environment} / {server.status} / {persistenceLabel(server.source)}
           </span>
         </div>
         <div className="row-actions">
@@ -410,7 +419,7 @@ function SelectedServerSummary({ server }: { server: ServerDetail }) {
               دائم
             </span>
           ) : (
-            <span className="badge warning">مؤقت</span>
+            <span className="badge warning">غير دائم</span>
           )}
         </div>
       </li>
@@ -423,6 +432,14 @@ function splitProfiles(value: string) {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function persistenceLabel(source: string) {
+  return source === "database" ? "محفوظ" : "غير دائم";
+}
+
+function persistenceBadge(source: string) {
+  return source === "database" ? "success" : "warning";
 }
 
 function errorText(error: unknown) {

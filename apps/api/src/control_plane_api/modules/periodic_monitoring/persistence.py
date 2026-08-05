@@ -102,8 +102,8 @@ async def persist_periodic_monitoring_cycle(
                         "status": report.status,
                         "started_at": report.started_at,
                         "completed_at": report.completed_at,
-                        "initial_analysis": "{}",
-                        "final_analysis": "{}",
+                        "initial_analysis": report.analysis.model_dump_json(),
+                        "final_analysis": report.analysis.model_dump_json(),
                     },
                 )
 
@@ -177,6 +177,7 @@ async def load_periodic_monitoring_cycles(
                             r.status,
                             r.started_at,
                             r.completed_at,
+                            r.final_analysis,
                             s.id::text AS server_id,
                             s.name AS server_name,
                             s.metadata AS server_metadata
@@ -217,6 +218,7 @@ async def load_periodic_monitoring_cycles(
                         monitoring_profiles=list(metadata.get("assigned_monitoring_profiles") or []),
                         metrics=[MonitoringMetricSample.model_validate(_json_object(row["value"])) for row in metric_rows],
                         raw_snapshot={},
+                        analysis=_json_object(report_row.get("final_analysis")),
                         collection_summary="Baseline metrics loaded from PostgreSQL.",
                     )
                 )

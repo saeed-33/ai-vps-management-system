@@ -4,25 +4,25 @@ const metrics = [
   {
     label: "السيرفرات",
     value: "1",
-    note: "سيرفر foundation مؤقت إلى حين ربط قاعدة البيانات",
+    note: "سيرفرات جاهزة للمراقبة الدورية",
     icon: Server,
   },
   {
     label: "المستخدمون",
     value: "1",
-    note: "مستخدم bootstrap الحالي إلى حين ربط قاعدة البيانات",
+    note: "حساب إدارة نشط لتشغيل اللوحة",
     icon: UserRound,
   },
   {
     label: "دورات المراقبة",
     value: "0",
-    note: "سيتم تعبئتها من monitoring_cycles",
+    note: "آخر دورات المراقبة الدورية",
     icon: Activity,
   },
   {
     label: "مشكلات مفتوحة",
     value: "0",
-    note: "سيتم ربطها بجدول issues",
+    note: "تنبيهات تحتاج متابعة",
     icon: FileWarning,
   },
 ];
@@ -87,8 +87,8 @@ export function DashboardOverview() {
           <ul className="status-list">
             <li className="status-row">
               <div>
-                <strong>Admin Panel Foundation</strong>
-                <span>layout وnavigation وdashboard أولي.</span>
+                <strong>لوحة الإدارة</strong>
+                <span>واجهات الإدارة والمتابعة جاهزة للاستخدام.</span>
               </div>
               <span className="badge success">نشط</span>
             </li>

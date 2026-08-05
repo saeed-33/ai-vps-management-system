@@ -8,6 +8,23 @@ export type MonitoringMetricSample = {
   source_tool: string;
 };
 
+export type MonitoringAnalysisFinding = {
+  code: string;
+  severity: string;
+  title: string;
+  detail: string;
+  metric: string | null;
+  value: number | string | boolean | null;
+  threshold: number | string | boolean | null;
+};
+
+export type MonitoringReportAnalysis = {
+  status: string;
+  severity: string;
+  summary: string;
+  findings: MonitoringAnalysisFinding[];
+};
+
 export type ServerSubAgentReport = {
   sub_agent_id: string;
   server_id: string;
@@ -19,6 +36,7 @@ export type ServerSubAgentReport = {
   metrics: MonitoringMetricSample[];
   raw_snapshot: Record<string, unknown>;
   collection_summary: string;
+  analysis: MonitoringReportAnalysis;
 };
 
 export type PeriodicMonitoringCycleReport = {

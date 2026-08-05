@@ -28,7 +28,7 @@ export function ApiStatusView() {
           <div>
             <h2 className="section-title">حالة الاتصال بالـ Backend API</h2>
             <p className="metric-note">
-              هذه الصفحة تتحقق من endpoints التي تم إنشاؤها في مرحلة Control Plane Foundation.
+              هذه الصفحة تتحقق من اتصال لوحة الإدارة بخدمات الواجهة الخلفية.
             </p>
           </div>
           <button
@@ -90,7 +90,7 @@ export function ApiStatusView() {
                 <li className="status-row" key={module.name}>
                   <div>
                     <strong>{module.name}</strong>
-                    <span>الحالة الحالية للوحدة في Backend foundation.</span>
+                    <span>حالة الوحدة في واجهة التحكم.</span>
                   </div>
                   <span className="badge neutral">{module.status}</span>
                 </li>

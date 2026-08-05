@@ -3,8 +3,10 @@ from fastapi.testclient import TestClient
 from control_plane_api.core.config import Settings
 from control_plane_api.core.security import hash_password
 from control_plane_api.main import create_app
+from control_plane_api.modules.periodic_monitoring.analysis import analyze_server_report
 from control_plane_api.modules.periodic_monitoring.persistence import database_uuid, stable_uuid
 from control_plane_api.modules.periodic_monitoring.service import RECENT_CYCLES, stop_periodic_monitoring_scheduler
+from control_plane_api.schemas.periodic_monitoring import MonitoringMetricSample, ServerSubAgentReport
 
 
 def make_client() -> TestClient:
@@ -66,7 +68,7 @@ def test_latest_cycle_not_found_before_run() -> None:
     assert response.status_code == 404
 
 
-def test_periodic_monitoring_cycle_produces_report_only() -> None:
+def test_periodic_monitoring_cycle_produces_analyzed_report() -> None:
     client = make_client()
     token = login(client)
 
@@ -82,9 +84,43 @@ def test_periodic_monitoring_cycle_produces_report_only() -> None:
     assert body["servers_planned"] == 1
     assert body["servers_checked"] == 1
     assert body["reports_count"] == 1
-    assert "No issue analysis" in body["scope_note"]
-    assert body["reports"][0]["sub_agent_id"] == "server-sub-agent-srv-foundation-001"
-    assert len(body["reports"][0]["metrics"]) == 5
+    assert "Control plane analysis" in body["scope_note"]
+    report = body["reports"][0]
+    assert report["sub_agent_id"] == "server-sub-agent-srv-foundation-001"
+    assert len(report["metrics"]) == 5
+    assert report["analysis"]["status"] == "no_issue"
+    assert report["analysis"]["severity"] == "info"
+    assert report["analysis"]["findings"] == []
+
+
+def test_periodic_monitoring_analysis_flags_critical_metrics() -> None:
+    report = ServerSubAgentReport(
+        sub_agent_id="server-sub-agent-srv-1",
+        server_id="srv-1",
+        server_name="server-one",
+        status="completed",
+        started_at="2026-08-05T10:00:00Z",
+        completed_at="2026-08-05T10:00:01Z",
+        monitoring_profiles=["profile-linux-baseline"],
+        metrics=[
+            MonitoringMetricSample(
+                metric="memory_usage_percent",
+                value=93,
+                unit="%",
+                domain="memory",
+                source_tool="free",
+                collected_at="2026-08-05T10:00:01Z",
+            )
+        ],
+        raw_snapshot={},
+        collection_summary="Baseline metrics collected successfully by periodic monitoring agent.",
+    )
+
+    analysis = analyze_server_report(report)
+
+    assert analysis.status == "confirmed_issue"
+    assert analysis.severity == "critical"
+    assert analysis.findings[0].code == "memory_usage_percent_critical"
 
 
 def test_periodic_monitoring_lists_created_reports() -> None:

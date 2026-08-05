@@ -12,6 +12,23 @@ class MonitoringMetricSample(BaseModel):
     source_tool: str
 
 
+class MonitoringAnalysisFinding(BaseModel):
+    code: str
+    severity: str
+    title: str
+    detail: str
+    metric: str | None = None
+    value: float | str | bool | None = None
+    threshold: float | str | bool | None = None
+
+
+class MonitoringReportAnalysis(BaseModel):
+    status: str = "not_analyzed"
+    severity: str = "info"
+    summary: str = "Report has not been analyzed yet."
+    findings: list[MonitoringAnalysisFinding] = Field(default_factory=list)
+
+
 class ServerSubAgentReport(BaseModel):
     sub_agent_id: str
     server_id: str
@@ -23,6 +40,7 @@ class ServerSubAgentReport(BaseModel):
     metrics: list[MonitoringMetricSample]
     raw_snapshot: dict[str, Any]
     collection_summary: str
+    analysis: MonitoringReportAnalysis = Field(default_factory=MonitoringReportAnalysis)
 
 
 class PeriodicMonitoringCycleReport(BaseModel):

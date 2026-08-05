@@ -90,7 +90,7 @@ export function PeriodicMonitoringView() {
         <div className="toolbar">
           <div>
             <h2 className="section-title">تشغيل المراقبة</h2>
-            <p className="metric-note">تشغيل دورة ينشئ تقريرا لكل سيرفر نشط، ثم يحفظ النتائج في قاعدة البيانات عند توفرها.</p>
+            <p className="metric-note">تشغيل دورة ينشئ تقريرا وتحليلا أوليا لكل سيرفر نشط.</p>
           </div>
           <div className="row-actions">
             <button
@@ -120,7 +120,7 @@ export function PeriodicMonitoringView() {
         <div className="toolbar">
           <div>
             <h2 className="section-title">جدولة المراقبة</h2>
-            <p className="metric-note">الجدولة تعمل داخل عملية الـ API الحالية وتتوقف عند إعادة تشغيلها.</p>
+            <p className="metric-note">الجدولة تعمل طالما خدمة المراقبة قيد التشغيل.</p>
           </div>
           <span className={`badge ${schedulerQuery.data?.enabled ? "success" : "neutral"}`}>
             <Clock3 aria-hidden="true" />
@@ -284,10 +284,30 @@ function ServerReportCard({ report }: { report: ServerSubAgentReport }) {
       </div>
 
       <p className="metric-note">{report.collection_summary}</p>
+      <div className="analysis-summary">
+        <span className={`badge ${analysisBadge(report.analysis.severity)}`}>{report.analysis.severity}</span>
+        <div>
+          <strong>{report.analysis.status}</strong>
+          <p>{report.analysis.summary}</p>
+        </div>
+      </div>
       {errorType || error ? (
         <p className="notice danger" dir="ltr">
           {errorType}: {error}
         </p>
+      ) : null}
+      {report.analysis.findings.length > 0 ? (
+        <ul className="finding-list">
+          {report.analysis.findings.map((finding) => (
+            <li key={finding.code}>
+              <span className={`badge ${analysisBadge(finding.severity)}`}>{finding.severity}</span>
+              <div>
+                <strong>{finding.title}</strong>
+                <p>{finding.detail}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
       ) : null}
 
       {report.metrics.length === 0 ? (
@@ -326,6 +346,16 @@ function metricLabel(metric: string) {
     failed_systemd_units: "Failed units",
   };
   return labels[metric] ?? metric.replaceAll("_", " ");
+}
+
+function analysisBadge(severity: string) {
+  if (severity === "critical") {
+    return "danger";
+  }
+  if (severity === "warning") {
+    return "warning";
+  }
+  return "success";
 }
 
 function shortCycleId(cycleId: string) {
