@@ -1107,3 +1107,26 @@ Verification:
 - `uv run pytest tests/test_periodic_monitoring.py` in `apps/api`: passed, 11 tests.
 - Backend `/health/ready`: ready after restart.
 - Admin panel `/periodic-monitoring`: HTTP 200 after restart.
+## Phase 34: Robust Ollama Analysis Payload Parsing
+
+Status: completed.
+
+Required work:
+
+- Fix Ollama analysis failures caused by valid JSON with unexpected list item shapes.
+- Keep LLM final analysis enabled without failing the whole report on minor response-shape drift.
+- Make prompt schema clearer for string-only list fields.
+
+Completed work:
+
+- Normalized string-list fields returned by the LLM.
+- Converted object items in `next_actions`, limitations, hypotheses, questions, and specialist-agent lists into safe JSON strings.
+- Updated prompt constraints.
+- Removed outdated rule-signal wording from failure limitations.
+- Added a regression test for object-shaped `next_actions`.
+
+Verification:
+
+- `uv run pytest tests/test_periodic_monitoring.py` in `apps/api`: passed, 12 tests.
+- `uv run python -m compileall src scripts` in `apps/api`: passed.
+- Backend restarted and listens on port `8000`.

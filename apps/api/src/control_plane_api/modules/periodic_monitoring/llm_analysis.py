@@ -145,7 +145,7 @@ def _unavailable_analysis(
             status="failed" if error else "skipped",
             provider=provider,
             model=model,
-            limitations=["Final report analysis is LLM-only; rule-based signals are not emitted as final analysis."],
+            limitations=["Final report analysis is LLM-only; collection context is not emitted as final analysis."],
             error=error,
         ),
     )
@@ -161,7 +161,7 @@ def _prompt(report: ServerSubAgentReport, collection_context: MonitoringReportAn
         },
         "metrics": [metric.model_dump() for metric in report.metrics],
         "raw_monitoring_evidence": report.raw_snapshot,
-            "non_diagnostic_collection_context": collection_context.model_dump(exclude={"llm_enrichment"}),
+        "non_diagnostic_collection_context": collection_context.model_dump(exclude={"llm_enrichment"}),
         "constraints": [
             "You are the only component allowed to produce the final report analysis.",
             "The collection context is not diagnostic analysis.",
@@ -169,6 +169,7 @@ def _prompt(report: ServerSubAgentReport, collection_context: MonitoringReportAn
             "Mention command failures or missing utilities as monitoring coverage limitations.",
             "Do not propose command execution.",
             "Do not claim certainty beyond the provided metrics.",
+            "All list fields must contain strings only unless the schema says findings.",
             "Return JSON only.",
         ],
         "json_schema": {
@@ -176,24 +177,64 @@ def _prompt(report: ServerSubAgentReport, collection_context: MonitoringReportAn
             "severity": "info | warning | critical",
             "summary": "final concise diagnostic conclusion",
             "findings": "array of findings with code, severity, title, detail, metric, value, profile_id, interpretation_note, suggested_specialist_agents",
-            "suggested_specialist_agents": "array of agent ids",
-            "next_actions": "array of safe review-only next actions",
+            "suggested_specialist_agents": "array of strings",
+            "next_actions": "array of strings with safe review-only next actions",
             "llm_summary": "narrative summary for UI",
-            "root_cause_hypotheses": "array",
-            "recommended_questions": "array",
-            "limitations": "array",
+            "root_cause_hypotheses": "array of strings",
+            "recommended_questions": "array of strings",
+            "limitations": "array of strings",
         },
     }
     return (
         "Analyze this periodic VPS monitoring report and produce the final report analysis. "
-        "The final analysis must be based on the metrics, monitoring profiles, and rule signals, "
+        "The final analysis must be based on the metrics, monitoring profile instructions, and raw evidence, "
         "but you must make the final diagnostic judgment.\n\n"
         f"{json.dumps(context, ensure_ascii=False)}"
     )
 
 
 def _parse_llm_payload(value: str) -> _LlmAnalysisPayload:
+    payload = json.loads(value)
+    if not isinstance(payload, dict):
+        raise ValueError("LLM response must be a JSON object.")
+    normalized = _normalize_llm_payload(payload)
     try:
-        return _LlmAnalysisPayload.model_validate_json(value)
+        return _LlmAnalysisPayload.model_validate(normalized)
     except ValidationError:
-        return _LlmAnalysisPayload.model_validate(json.loads(value))
+        return _LlmAnalysisPayload.model_validate(_stringify_unknown_values(normalized))
+
+
+def _normalize_llm_payload(payload: dict[str, object]) -> dict[str, object]:
+    normalized = dict(payload)
+    for key in [
+        "suggested_specialist_agents",
+        "next_actions",
+        "root_cause_hypotheses",
+        "recommended_questions",
+        "limitations",
+    ]:
+        normalized[key] = _coerce_string_list(normalized.get(key))
+    return normalized
+
+
+def _coerce_string_list(value: object) -> list[str]:
+    if value is None:
+        return []
+    items = value if isinstance(value, list) else [value]
+    return [_stringify(item) for item in items if item is not None]
+
+
+def _stringify_unknown_values(payload: dict[str, object]) -> dict[str, object]:
+    normalized = dict(payload)
+    for key, value in normalized.items():
+        if key == "findings":
+            continue
+        if isinstance(value, dict):
+            normalized[key] = _stringify(value)
+    return normalized
+
+
+def _stringify(value: object) -> str:
+    if isinstance(value, str):
+        return value
+    return json.dumps(value, ensure_ascii=False, sort_keys=True)

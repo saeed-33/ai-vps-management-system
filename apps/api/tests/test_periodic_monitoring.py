@@ -5,7 +5,7 @@ from control_plane_api.core.config import Settings
 from control_plane_api.core.security import hash_password
 from control_plane_api.main import create_app
 from control_plane_api.modules.periodic_monitoring.analysis import analyze_server_report
-from control_plane_api.modules.periodic_monitoring.llm_analysis import analyze_report_with_llm
+from control_plane_api.modules.periodic_monitoring.llm_analysis import _parse_llm_payload, analyze_report_with_llm
 from control_plane_api.modules.periodic_monitoring.persistence import database_uuid, stable_uuid
 from control_plane_api.modules.periodic_monitoring.service import RECENT_CYCLES, stop_periodic_monitoring_scheduler
 from control_plane_api.schemas.periodic_monitoring import MonitoringMetricSample, ServerSubAgentReport
@@ -153,6 +153,32 @@ def test_periodic_monitoring_analysis_records_profile_coverage_gap() -> None:
     assert analysis.severity == "info"
     assert analysis.profiles_evaluated == ["profile-nginx-health"]
     assert analysis.findings == []
+
+
+def test_llm_payload_parser_coerces_object_next_actions() -> None:
+    payload = _parse_llm_payload(
+        """
+        {
+          "status": "needs_human_review",
+          "severity": "warning",
+          "summary": "Log evidence needs review.",
+          "findings": [],
+          "suggested_specialist_agents": [],
+          "next_actions": [
+            {
+              "action": "Review filesystem evidence",
+              "type": "Log/Disk Audit"
+            }
+          ],
+          "llm_summary": "Review required.",
+          "root_cause_hypotheses": [],
+          "recommended_questions": [],
+          "limitations": []
+        }
+        """
+    )
+
+    assert payload.next_actions == ['{"action": "Review filesystem evidence", "type": "Log/Disk Audit"}']
 
 
 @pytest.mark.anyio
