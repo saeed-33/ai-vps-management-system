@@ -90,6 +90,8 @@ def test_periodic_monitoring_cycle_produces_analyzed_report() -> None:
     report = body["reports"][0]
     assert report["sub_agent_id"] == "server-sub-agent-srv-foundation-001"
     assert len(report["metrics"]) == 5
+    assert report["raw_snapshot"]["collector"] == "FixtureBaselineCollector"
+    assert "samples" in report["raw_snapshot"]
     assert report["analysis"]["status"] == "analysis_unavailable"
     assert report["analysis"]["severity"] == "warning"
     assert report["analysis"]["findings"] == []

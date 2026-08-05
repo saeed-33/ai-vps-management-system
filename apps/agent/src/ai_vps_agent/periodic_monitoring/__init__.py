@@ -1,4 +1,5 @@
 from ai_vps_agent.periodic_monitoring.models import (
+    AgentMonitoringCollection,
     AgentMonitoringMetricSample,
     AgentPeriodicMonitoringCycleReport,
     AgentServer,
@@ -7,6 +8,7 @@ from ai_vps_agent.periodic_monitoring.models import (
 
 __all__ = [
     "AgentMonitoringMetricSample",
+    "AgentMonitoringCollection",
     "AgentPeriodicMonitoringCycleReport",
     "AgentServer",
     "AgentServerSubAgentReport",

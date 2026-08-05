@@ -1,3 +1,4 @@
+import json
 from uuid import NAMESPACE_URL, UUID, uuid5
 
 from sqlalchemy import text
@@ -86,11 +87,12 @@ async def persist_periodic_monitoring_cycle(
                     text(
                         """
                         INSERT INTO periodic_monitoring_reports (
-                            id, cycle_id, server_id, status, started_at, completed_at, initial_analysis, final_analysis
+                            id, cycle_id, server_id, status, started_at, completed_at,
+                            raw_snapshot, initial_analysis, final_analysis
                         )
                         VALUES (
                             :id, :cycle_id, :server_id, :status, :started_at, :completed_at,
-                            CAST(:initial_analysis AS jsonb), CAST(:final_analysis AS jsonb)
+                            CAST(:raw_snapshot AS jsonb), CAST(:initial_analysis AS jsonb), CAST(:final_analysis AS jsonb)
                         )
                         ON CONFLICT (cycle_id, server_id) DO NOTHING
                         """
@@ -102,6 +104,7 @@ async def persist_periodic_monitoring_cycle(
                         "status": report.status,
                         "started_at": report.started_at,
                         "completed_at": report.completed_at,
+                        "raw_snapshot": json.dumps(report.raw_snapshot),
                         "initial_analysis": report.analysis.model_dump_json(),
                         "final_analysis": report.analysis.model_dump_json(),
                     },
@@ -177,6 +180,7 @@ async def load_periodic_monitoring_cycles(
                             r.status,
                             r.started_at,
                             r.completed_at,
+                            r.raw_snapshot,
                             r.final_analysis,
                             s.id::text AS server_id,
                             s.name AS server_name,
@@ -217,7 +221,7 @@ async def load_periodic_monitoring_cycles(
                         completed_at=report_row["completed_at"],
                         monitoring_profiles=list(metadata.get("assigned_monitoring_profiles") or []),
                         metrics=[MonitoringMetricSample.model_validate(_json_object(row["value"])) for row in metric_rows],
-                        raw_snapshot={},
+                        raw_snapshot=_extract_raw_snapshot(report_row.get("raw_snapshot")),
                         analysis=_json_object(report_row.get("final_analysis")),
                         collection_summary="Baseline metrics loaded from PostgreSQL.",
                     )
@@ -251,3 +255,11 @@ def _json_object(value: object) -> dict[str, object]:
 
         return dict(json.loads(value))
     return dict(value)  # type: ignore[arg-type]
+
+
+def _extract_raw_snapshot(value: object) -> dict[str, object]:
+    raw = _json_object(value)
+    nested = raw.get("raw_snapshot")
+    if isinstance(nested, dict):
+        return nested
+    return raw

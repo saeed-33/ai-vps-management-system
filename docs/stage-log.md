@@ -1018,3 +1018,33 @@ Verification:
 - `uv run --extra dev pytest` in `apps/agent`: `7 passed`.
 - `npm run lint`: passed.
 - `npm run build`: passed.
+## Phase 31: Claude Project Evidence Alignment
+
+Status: completed.
+
+Required work:
+
+- Inspect `E:\AI_VPS_Mamgment\claude_project`.
+- Compare the old MCP monitoring/report flow with the current periodic monitoring implementation.
+- Preserve raw command evidence inside periodic monitoring reports.
+- Feed raw evidence to the LLM-only final analysis.
+- Persist raw snapshots in PostgreSQL.
+- Improve report review in the admin panel.
+
+Completed work:
+
+- Added structured collection output in the agent.
+- Stored SSH command results in `raw_snapshot.command_results`.
+- Included raw monitoring evidence in the LLM prompt.
+- Added `raw_snapshot` to `periodic_monitoring_reports`.
+- Added and applied migration `0002_periodic_report_raw_snapshot.sql`.
+- Displayed raw monitoring evidence in the admin panel report cards.
+- Created `docs/phase-31`.
+
+Verification:
+
+- `uv run --extra dev pytest` in `apps/agent`: passed, 8 tests.
+- `uv run pytest` in `apps/api`: passed, 52 tests.
+- `uv run python -m compileall src scripts` in `apps/api`: passed.
+- `npm run lint` in `apps/admin-panel`: passed.
+- `npm run build` in `apps/admin-panel`: passed.

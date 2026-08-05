@@ -23,6 +23,11 @@ class AgentMonitoringMetricSample(BaseModel):
     source_tool: str
 
 
+class AgentMonitoringCollection(BaseModel):
+    metrics: list[AgentMonitoringMetricSample]
+    raw_snapshot: dict[str, Any]
+
+
 class AgentServerSubAgentReport(BaseModel):
     sub_agent_id: str
     server_id: str

@@ -1,19 +1,20 @@
 from typing import Protocol
 from concurrent.futures import ThreadPoolExecutor
 
-from ai_vps_agent.periodic_monitoring.models import AgentMonitoringMetricSample, AgentServer
+from ai_vps_agent.periodic_monitoring.models import AgentMonitoringCollection, AgentMonitoringMetricSample, AgentServer
+from ai_vps_agent.server_access.models import CommandResult
 from ai_vps_agent.server_access.ssh_client import SshCommandClient
 from ai_vps_agent.tools.parsers import parse_baseline_results
 from ai_vps_agent.tools.registry import BASELINE_TOOL_CODES, baseline_command_policy
 
 
 class BaselineCollector(Protocol):
-    def collect(self, server: AgentServer, profile_ids: list[str]) -> list[AgentMonitoringMetricSample]:
-        """Collect read-only baseline metrics for a server."""
+    def collect(self, server: AgentServer, profile_ids: list[str]) -> AgentMonitoringCollection:
+        """Collect read-only baseline evidence for a server."""
 
 
 class FixtureBaselineCollector:
-    def collect(self, server: AgentServer, profile_ids: list[str]) -> list[AgentMonitoringMetricSample]:
+    def collect(self, server: AgentServer, profile_ids: list[str]) -> AgentMonitoringCollection:
         metrics: list[AgentMonitoringMetricSample] = []
         for profile_id in profile_ids:
             domain = "system" if profile_id == "profile-linux-baseline" else "unknown"
@@ -56,27 +57,48 @@ class FixtureBaselineCollector:
                     ),
                 ]
             )
-        return metrics
+        return AgentMonitoringCollection(
+            metrics=metrics,
+            raw_snapshot={
+                "collector": self.__class__.__name__,
+                "server_id": server.id,
+                "server_name": server.name,
+                "profile_ids": profile_ids,
+                "samples": {sample.metric: sample.value for sample in metrics},
+                "command_results": [],
+            },
+        )
 
 
 class SshBaselineCollector:
-    def collect(self, server: AgentServer, profile_ids: list[str]) -> list[AgentMonitoringMetricSample]:
+    def collect(self, server: AgentServer, profile_ids: list[str]) -> AgentMonitoringCollection:
         if server.ssh is None:
             raise ValueError("SSH access is required for SshBaselineCollector")
         return _run_async_collect(server)
 
 
-async def _collect_over_ssh(server: AgentServer) -> list[AgentMonitoringMetricSample]:
+async def _collect_over_ssh(server: AgentServer) -> AgentMonitoringCollection:
     if server.ssh is None:
         raise ValueError("SSH access is required for SshBaselineCollector")
     client = SshCommandClient(server.ssh, baseline_command_policy())
-    results = []
+    results: list[CommandResult] = []
     for tool_code in BASELINE_TOOL_CODES:
         results.append(await client.run_tool(tool_code))
-    return parse_baseline_results(results)
+    metrics = parse_baseline_results(results)
+    return AgentMonitoringCollection(
+        metrics=metrics,
+        raw_snapshot={
+            "collector": SshBaselineCollector.__name__,
+            "server_id": server.id,
+            "server_name": server.name,
+            "profile_ids": server.monitoring_profiles,
+            "samples": {sample.metric: sample.value for sample in metrics},
+            "command_results": [result.model_dump() for result in results],
+        },
+    )
 
 
-def _run_async_collect(server: AgentServer) -> list[AgentMonitoringMetricSample]:
+def _run_async_collect(server: AgentServer) -> AgentMonitoringCollection:
     import asyncio
 
     try:
@@ -93,7 +115,7 @@ class HybridBaselineCollector:
         self._fixture = FixtureBaselineCollector()
         self._ssh = SshBaselineCollector()
 
-    def collect(self, server: AgentServer, profile_ids: list[str]) -> list[AgentMonitoringMetricSample]:
+    def collect(self, server: AgentServer, profile_ids: list[str]) -> AgentMonitoringCollection:
         if server.ssh is None:
             return self._fixture.collect(server, profile_ids)
         return self._ssh.collect(server, profile_ids)

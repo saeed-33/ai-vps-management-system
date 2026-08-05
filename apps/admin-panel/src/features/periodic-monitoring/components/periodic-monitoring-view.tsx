@@ -298,6 +298,7 @@ function ServerReportCard({ report }: { report: ServerSubAgentReport }) {
   const errorType = typeof report.raw_snapshot.error_type === "string" ? report.raw_snapshot.error_type : null;
   const error = typeof report.raw_snapshot.error === "string" ? report.raw_snapshot.error : null;
   const failed = report.status !== "completed";
+  const commandResults = getCommandResults(report.raw_snapshot);
 
   return (
     <article className={`server-report-card ${failed ? "failed" : ""}`}>
@@ -372,7 +373,37 @@ function ServerReportCard({ report }: { report: ServerSubAgentReport }) {
           ))}
         </div>
       )}
+      {commandResults.length > 0 ? <CommandEvidenceList commandResults={commandResults} /> : null}
     </article>
+  );
+}
+
+type CommandEvidence = {
+  tool_code: string;
+  command: string;
+  exit_status: number;
+  stdout: string;
+  stderr: string;
+};
+
+function CommandEvidenceList({ commandResults }: { commandResults: CommandEvidence[] }) {
+  return (
+    <details className="command-evidence">
+      <summary>Raw monitoring evidence ({commandResults.length})</summary>
+      <div className="command-evidence-list">
+        {commandResults.map((result) => (
+          <article className="command-evidence-item" key={`${result.tool_code}-${result.command}`}>
+            <div>
+              <strong>{result.tool_code}</strong>
+              <span dir="ltr">exit {result.exit_status}</span>
+            </div>
+            <code dir="ltr">{result.command}</code>
+            {result.stdout ? <pre dir="ltr">{trimEvidence(result.stdout)}</pre> : null}
+            {result.stderr ? <pre className="stderr" dir="ltr">{trimEvidence(result.stderr)}</pre> : null}
+          </article>
+        ))}
+      </div>
+    </details>
   );
 }
 
@@ -388,6 +419,28 @@ function MetricSampleCard({ metric }: { metric: MonitoringMetricSample }) {
       </small>
     </div>
   );
+}
+
+function getCommandResults(rawSnapshot: Record<string, unknown>): CommandEvidence[] {
+  const value = rawSnapshot.command_results;
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as Record<string, unknown>;
+    return [
+      {
+        tool_code: String(record.tool_code ?? "unknown"),
+        command: String(record.command ?? ""),
+        exit_status: Number(record.exit_status ?? 0),
+        stdout: String(record.stdout ?? ""),
+        stderr: String(record.stderr ?? ""),
+      },
+    ];
+  });
+}
+
+function trimEvidence(value: string) {
+  return value.length > 1600 ? `${value.slice(0, 1600)}\n... truncated in UI` : value;
 }
 
 function AnalysisReportsWorkspace({

@@ -178,6 +178,7 @@ CREATE TABLE periodic_monitoring_reports (
     status TEXT NOT NULL DEFAULT 'running' CHECK (status IN ('running', 'completed', 'failed')),
     initial_status TEXT CHECK (initial_status IN ('no_issue', 'suspected_issue', 'warning', 'confirmed_issue', 'critical_issue', 'needs_human_review')),
     final_status TEXT CHECK (final_status IN ('no_issue', 'suspected_issue', 'warning', 'confirmed_issue', 'critical_issue', 'needs_human_review')),
+    raw_snapshot JSONB NOT NULL DEFAULT '{}'::jsonb,
     initial_analysis JSONB NOT NULL DEFAULT '{}'::jsonb,
     final_analysis JSONB NOT NULL DEFAULT '{}'::jsonb,
     started_at TIMESTAMPTZ,

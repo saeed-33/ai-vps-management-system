@@ -84,6 +84,8 @@ LLM_ANALYSIS_TIMEOUT_SECONDS=20
 
 If LLM is disabled or the LLM call fails, the monitoring cycle still completes, but the analysis report status becomes `analysis_unavailable` or `analysis_failed`. No rule-based fallback is emitted as final analysis.
 
+Periodic monitoring reports also preserve `raw_snapshot.command_results` when SSH collection is used. The LLM prompt receives these raw command outputs as primary evidence alongside parsed metrics and internal rule signals.
+
 ## Endpoints
 
 ```text

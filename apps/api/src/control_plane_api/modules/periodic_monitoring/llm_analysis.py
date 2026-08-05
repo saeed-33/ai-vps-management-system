@@ -160,10 +160,13 @@ def _prompt(report: ServerSubAgentReport, rule_signals: MonitoringReportAnalysis
             "monitoring_profiles": report.monitoring_profiles,
         },
         "metrics": [metric.model_dump() for metric in report.metrics],
+        "raw_monitoring_evidence": report.raw_snapshot,
         "rule_signals_not_final_analysis": rule_signals.model_dump(exclude={"llm_enrichment"}),
         "constraints": [
             "You are the only component allowed to produce the final report analysis.",
             "Rule signals are evidence only, not final conclusions.",
+            "Use raw command outputs as primary evidence when they are present.",
+            "Mention command failures or missing utilities as monitoring coverage limitations.",
             "Do not propose command execution.",
             "Do not claim certainty beyond the provided metrics.",
             "Return JSON only.",

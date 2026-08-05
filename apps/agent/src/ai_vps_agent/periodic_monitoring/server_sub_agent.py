@@ -12,7 +12,7 @@ class ServerSubAgent:
     def collect_report(self, *, started_at: datetime) -> AgentServerSubAgentReport:
         profile_ids = self._server.monitoring_profiles
         try:
-            metrics = self._collector.collect(self._server, profile_ids)
+            collection = self._collector.collect(self._server, profile_ids)
         except Exception as exc:
             completed_at = datetime.now(UTC)
             return AgentServerSubAgentReport(
@@ -43,12 +43,7 @@ class ServerSubAgent:
             started_at=started_at,
             completed_at=completed_at,
             monitoring_profiles=profile_ids,
-            metrics=metrics,
-            raw_snapshot={
-                "collector": self._collector.__class__.__name__,
-                "server_id": self._server.id,
-                "profile_ids": profile_ids,
-                "samples": {sample.metric: sample.value for sample in metrics},
-            },
+            metrics=collection.metrics,
+            raw_snapshot=collection.raw_snapshot,
             collection_summary="Baseline metrics collected successfully by periodic monitoring agent.",
         )
